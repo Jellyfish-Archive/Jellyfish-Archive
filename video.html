@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Archive – Jellyfish Archive</title>
+
+  <!-- 📱 Zuverlässige mobile Weiterleitung -->
+  <script>
+  (function() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini/.test(ua);
+
+    // GitHub Pages-sicherer Pfad:
+    const path = window.location.pathname;
+    const base = path.substring(0, path.lastIndexOf('/') + 1);
+
+    if (isMobile && !window.location.href.includes("mobile.html")) {
+      window.location.href = base + "mobile.html";
+    }
+  })();
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #fff;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    /* Hintergrundvideo */
+    video.bg-video {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* HEADER / NAV */
+    header {
+      position: fixed; top: 0; left: 0; width: 100%;
+      z-index: 10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1.2rem 2rem;
+      background: transparent;
+    }
+
+    .logo {
+      width: 150px; margin-bottom: 0.6rem;
+      filter: drop-shadow(0 0 10px rgba(255, 210, 80, 0.7));
+      animation: goldGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes goldGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 220, 100, 0.5)); opacity: 0.9; }
+      50% { filter: drop-shadow(0 0 22px rgba(255, 240, 180, 1)); opacity: 1; }
+    }
+
+    nav {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 0.3rem;
+    }
+
+    nav a {
+      display: inline-block; padding: 0.5rem 1.2rem; border-radius: 8px;
+      border: 1px solid rgba(255, 220, 80, 0.4);
+      color: #000; background: rgba(255, 255, 255, 0.6);
+      font-weight: 600; letter-spacing: 1px; text-decoration: none; text-transform: uppercase;
+      backdrop-filter: blur(3px); transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(255, 230, 100, 0.8);
+      color: #000; box-shadow: 0 0 20px rgba(255, 230, 100, 0.8); transform: translateY(-2px);
+    }
+
+    nav a.active {
+      background: rgba(255, 230, 100, 0.9);
+      color: #000; box-shadow: 0 0 20px rgba(255, 230, 100, 0.9);
+    }
+
+    /* MAIN */
+    main {
+      margin-top: 260px;
+      height: calc(100vh - 260px);
+      overflow-y: auto;
+      padding-bottom: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      scroll-behavior: smooth;
+    }
+
+    main::-webkit-scrollbar { width: 10px; }
+    main::-webkit-scrollbar-thumb { background: rgba(255, 230, 120, 0.4); border-radius: 5px; }
+    main::-webkit-scrollbar-thumb:hover { background: rgba(255, 230, 120, 0.8); }
+
+    h1 {
+      color: #f7d85a;
+      margin-bottom: 1.2rem;
+      font-size: 1.9rem;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(255, 220, 100, 0.5);
+    }
+
+    /* FILTERBUTTONS – jetzt kleiner & schmaler */
+    .filter-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.3rem;
+      width: 400px;
+      margin-bottom: 2rem;
+    }
+
+    .filter-buttons button {
+      flex: 1;
+      background: rgba(200, 40, 40, 0.45);
+      border: 1px solid rgba(255, 120, 120, 0.6);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.65rem;  /* kleiner */
+      letter-spacing: 0.3px;
+      padding: 0.25rem 0.3rem; /* schmaler */
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-transform: uppercase;
+      white-space: nowrap; /* kein Zeilenumbruch */
+    }
+
+    .filter-buttons button:hover {
+      background: rgba(255, 70, 70, 0.7);
+      box-shadow: 0 0 8px rgba(255, 80, 80, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .filter-buttons button.active {
+      background: rgba(255, 80, 80, 0.85);
+      box-shadow: 0 0 12px rgba(255, 100, 100, 0.6);
+    }
+
+    /* VIDEO LIST */
+    .video-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+      width: 70%;
+      max-width: 900px;
+    }
+
+    .video-card {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      background: rgba(255, 240, 180, 0.15);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 0 10px rgba(255, 220, 120, 0.25);
+      color: #000;
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .video-card:hover {
+      transform: scale(1.015);
+      box-shadow: 0 0 20px rgba(255, 230, 100, 0.4);
+    }
+
+    .video-card img {
+      width: 240px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .video-info {
+      flex: 1;
+      text-align: left;
+      min-width: 0;
+    }
+
+    .video-info h2 {
+      margin-bottom: 0.25rem;
+      color: #000;
+      font-size: 1.05rem;
+    }
+
+    .video-info .duration {
+      color: #555;
+      font-size: 0.8rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.8rem;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .meta div span {
+      display: block;
+      font-weight: normal;
+      color: #333;
+      margin-top: 0.1rem;
+    }
+
+    .status-online { color: #228B22; font-weight: bold; }
+    .status-missing { color: #b00000; font-weight: bold; }
+
+    .download-btn {
+      background: #d76c5a;
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .download-btn:hover {
+      background: #c95b4a;
+      transform: scale(1.05);
+    }
+
+    /* IMPRESSUM */
+    .impressum-link {
+      position: fixed;
+      bottom: 40px;
+      left: 60px;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffea80;
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-shadow: 3px 3px 8px rgba(0,0,0,0.8);
+      z-index: 9999;
+    }
+    .impressum-link:hover { color: #fff; }
+
+    /* ABOUT & HELP */
+    .about-panel { position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 10000; display: flex; align-items: center; }
+    .about-trigger { background: rgba(200, 30, 30, 0.95); color: #fff; font-weight: bold; letter-spacing: 2px; writing-mode: vertical-rl; text-orientation: mixed; padding: 1rem 0.5rem; border-radius: 8px 0 0 8px; box-shadow: 0 0 15px rgba(255, 60, 60, 0.6); cursor: pointer; transition: all 0.3s ease; }
+    .about-content { position: absolute; right: -320px; width: 300px; background: rgba(255, 240, 180, 0.9); color: #000; padding: 1.5rem; border-radius: 12px 0 0 12px; box-shadow: -5px 0 25px rgba(255, 100, 100, 0.4); backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: all 0.5s ease; }
+    .about-panel:hover .about-content { right: 55px; opacity: 1; pointer-events: auto; }
+
+    .help-panel { position: fixed; bottom: -1px; left: 120px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-start; }
+    .help-trigger { background: rgba(255, 230, 100, 0.95); color: #000; font-weight: 800; letter-spacing: 0.5px; padding: 0.65rem 1.2rem; border-radius: 10px 10px 0 0; box-shadow: 0 0 10px rgba(255, 230, 100, 0.6); cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
+    .help-content { position: absolute; bottom: calc(100% + 8px); left: 0; width: 260px; background: rgba(255, 240, 180, 0.96); color: #000; padding: 1rem 1.2rem; border-radius: 12px 12px 0 0; box-shadow: 0 0 18px rgba(255, 220, 100, 0.3); backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: all 0.35s ease; font-size: 0.9rem; line-height: 1.5; transform: translateY(10px); }
+    .help-panel:hover .help-content { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="media/bgvid.mp4" type="video/mp4">
+  </video>
+
+  <header>
+    <img src="media/logo.png" alt="Jellyfish Archive Logo" class="logo">
+    <nav>
+      <a href="home.html">HOME</a>
+      <a href="audio.html">AUDIO-ARCHIVE</a>
+      <a href="video.html" class="active">VIDEO-ARCHIVE</a>
+      <a href="jellytube.html">JELLYTUBE</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Jellyfish Video Archive</h1>
+
+    <div class="filter-buttons">
+      <button class="active" data-category="concerts">Concerts</button>
+      <button data-category="bootlegs">Bootlegs</button>
+      <button data-category="tv">TV-Appearances</button>
+      <button data-category="music-videos">Music-Videos</button>
+    </div>
+
+    <div class="video-list">
+      <div class="video-card" data-category="concerts">
+        <img src="media/thumbnails/club-lingerie.jpg" alt="Club Lingerie">
+        <div class="video-info">
+          <h2>Club-Lingerie, Hollywood CA</h2>
+          <p class="duration">Duration: 01:01:33</p>
+          <div class="meta">
+            <div>DATE <span>October 1990</span></div>
+            <div>RECORDING <span>Professional</span></div>
+            <div>STATUS <span class="status-online">ONLINE</span></div>
+          </div>
+        </div>
+        <a href="https://mega.nz/folder/vNww0YYD#HcfJiGlZSTRv1Yfsc6seBw" target="_blank" rel="noopener">
+          <button class="download-btn">DOWNLOAD</button>
+        </a>
+      </div>
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/sanjose.jpg" alt="San Jose, USA, CA">
+  <div class="video-info">
+    <h2>San Jose, USA, CA</h2>
+    <p class="duration">Duration: 46:17</p>
+    <div class="meta">
+      <div>DATE <span>6.6.1991</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1oSwzqoc2mhJQ4IUr11NmHPL2TA9S5n0o?usp=sharing" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Frankfurt Music Hall -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/frankf.jpg" alt="Frankfurter Music Hall, Germany">
+  <div class="video-info">
+    <h2>Frankfurter Music Hall, Germany</h2>
+    <p class="duration">Duration: 01:10:37</p>
+    <div class="meta">
+      <div>DATE <span>06/05/1991</span></div>
+      <div>RECORDING <span>Professional</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://mega.nz/folder/yM5Q0ZoY#V39uPP27lm2FJxCgA3JhKg" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- MTV Studios -->
+<div class="video-card" data-category="tv">
+  <img src="media/thumbnails/mtv.jpg" alt="MTV Studios">
+  <div class="video-info">
+    <h2>MTV Studios</h2>
+    <p class="duration">Duration: 38:59</p>
+    <div class="meta">
+      <div>DATE <span>??/??/1991</span></div>
+      <div>RECORDING <span>Professional</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcR0wxZHZ1X21vcEE/view?usp=sharing&resourcekey=0-vZZdDFLsXPjwE_v0JzvBCg" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Nachtwerk Munich -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/munich.jpg" alt="Nachtwerk, Munich, Germany">
+  <div class="video-info">
+    <h2>Nachtwerk, Munich, Germany</h2>
+    <p class="duration">Duration: 44:40</p>
+    <div class="meta">
+      <div>DATE <span>10/05/1993</span></div>
+      <div>RECORDING <span>Professional Master</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1_9Bj0wM7-Pe_BiX9LQ4ExpJpfDhxO-l2?usp=sharing" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- 2 Meter Sessies -->
+<div class="video-card" data-category="tv">
+  <img src="media/thumbnails/2meter.jpg" alt="2 Meter Sessies (13 Minutes Only)">
+  <div class="video-info">
+    <h2>2 Meter Sessies (13 Minutes Only)</h2>
+    <p class="duration">Duration: 01:01:33</p>
+    <div class="meta">
+      <div>DATE <span>10/3/1993</span></div>
+      <div>RECORDING <span>Professional</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcX1RCNHJIYlBTWVk/view?usp=sharing&resourcekey=0-n_fbLxr0dAIfRDiOpgPEyA" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- State Palace Theatre -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/statepalace.jpg" alt="State Palace Theatre, New Orleans">
+  <div class="video-info">
+    <h2>State Palace Theatre, New Orleans</h2>
+    <p class="duration">Duration: 46:13</p>
+    <div class="meta">
+      <div>DATE <span>11/15/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcUXJrQzBGZHZnb2s/view?usp=sharing&resourcekey=0-Fstmzi967XIN4FAe0yT2sw" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- The Warfield -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/warfield.jpg" alt="The Warfield SF, CA">
+  <div class="video-info">
+    <h2>The Warfield SF, CA</h2>
+    <p class="duration">Duration: 01:18:30</p>
+    <div class="meta">
+      <div>DATE <span>07/17/1993</span></div>
+      <div>RECORDING <span>Audience/SB-Audio</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcbE04MUl4UjM4b3M/view?usp=sharing&resourcekey=0-BHEH_Mh-AkhlO4ENkiE2Aw" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- The Roxy, Phoenix, AZ -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/roxy-phoenix.jpg" alt="The Roxy, Phoenix, AZ">
+  <div class="video-info">
+    <h2>The Roxy, Phoenix, AZ</h2>
+    <p class="duration">Duration: 01:12:52</p>
+    <div class="meta">
+      <div>DATE <span>04/13/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1HHCjvgFzSc9A2WZHy0KzqxCwdbJ9iYrt?usp=sharing" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Tower Records -->
+<div class="video-card" data-category="tv">
+  <img src="media/thumbnails/tower.jpg" alt="Tower Records, L.A, CA">
+  <div class="video-info">
+    <h2>Tower Records, L.A, CA</h2>
+    <p class="duration">Duration: 37:04</p>
+    <div class="meta">
+      <div>DATE <span>07/22/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/drive/folders/1SCisRM7JBAXYD8Ihx0splO-UpvSfoslu?usp=sharing" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Philadelphia -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/phil1.jpg" alt="Philadelphia (Version 1)">
+  <div class="video-info">
+    <h2>Philadelphia (Version 1)</h2>
+    <p class="duration">Duration: 19:29</p>
+    <div class="meta">
+      <div>DATE <span>06/05/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcWGhBSXZrWnBKLWc/view?usp=sharing&resourcekey=0-Gtig_N_KqBMq7KG5kenXyg" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+<!-- Philadelphia (Version 2) -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/phil2.jpg" alt="Philadelphia (Version 2)">
+  <div class="video-info">
+    <h2>Philadelphia (Version 2)</h2>
+    <p class="duration">Duration: 18:36</p>
+    <div class="meta">
+      <div>DATE <span>06/05/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcLUJwQzA2aUJCN1k/view?usp=sharing&resourcekey=0-da4HPBJwTezoZUCD9CNCGw" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Honolulu, HI -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/hono.jpg" alt="Honolulu, HI">
+  <div class="video-info">
+    <h2>Honolulu, HI</h2>
+    <p class="duration">Duration: 23:30</p>
+    <div class="meta">
+      <div>DATE <span>09/28/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcQ3YzemZLZWwtTHM/view?resourcekey=0-O3jCn4qYr_DcoJ9XtI-v1g" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+
+<!-- Austin, TX -->
+<div class="video-card" data-category="concerts">
+  <img src="media/thumbnails/sacra.jpg" alt="Austin, TX">
+  <div class="video-info">
+    <h2>Austin, TX</h2>
+    <p class="duration">Duration: 22:43</p>
+    <div class="meta">
+      <div>DATE <span>04/09/1993</span></div>
+      <div>RECORDING <span>Audience</span></div>
+      <div>STATUS <span class="status-online">ONLINE</span></div>
+    </div>
+  </div>
+  <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcNlBjX3RVMzE3RDQ/view?usp=sharing&resourcekey=0-FVI_uNxbthrpvFdORo1WBw" target="_blank" rel="noopener">
+    <button class="download-btn">DOWNLOAD</button>
+  </a>
+</div>
+    </div>
+    </div> <!-- Ende video-list -->
+
+    <!-- 🟡 BOOTLEGS SECTION -->
+    <section id="bootlegs" style="margin-top: 2rem; text-align: center;">
+      <h2 style="
+        color: #f7d85a;
+        margin-bottom: 1.2rem;
+        font-size: 1.6rem;
+        text-transform: uppercase;
+        text-shadow: 0 0 12px rgba(255, 220, 100, 0.5);
+      ">
+        Bootlegs
+      </h2>
+
+      <div style="
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 14px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 0 20px rgba(255, 220, 120, 0.2);
+        padding: 1rem 1.5rem;
+      ">
+
+        <style>
+          .tg  {border-collapse:collapse;border-color:#aaa;border-spacing:0; width: 100%;}
+          .tg td {
+            background-color: rgba(255,255,255,0.85);
+            border-color: rgba(180,180,180,0.6);
+            border-style: solid;
+            border-width: 1px;
+            color: #222;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            padding: 8px 10px;
+            text-align: left;
+          }
+          .tg th {
+            background-color: rgba(255,80,50,0.9);
+            color: #fff;
+            border-color: rgba(180,180,180,0.5);
+            border-style: solid;
+            border-width: 1px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .tg a {
+            color: #c84434;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease;
+          }
+          .tg a:hover {
+            color: #ff6633;
+            text-decoration: underline;
+          }
+        </style>
+
+        <table class="tg">
+          <thead>
+            <tr>
+              <th>TITLE</th>
+              <th>TYPE</th>
+              <th>DOWNLOAD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Acoustic 1</td><td>DVD</td><td><a href="https://terabox.com/s/1vwMErQVQlf-vakQvLKhvTA" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Acoustic 2</td><td>DVD</td><td><a href="https://terabox.com/s/1XPFzcQpe1FtH54z4LfHbQA" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Acoustic 3</td><td>DVD</td><td><a href="https://terabox.com/s/11ht6H5NntuMKX2h-F6BtmA" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>MTV (2 DVDs)</td><td>DVD</td><td><a href="https://terabox.com/s/1BCU6VXUwI3LmO9bWTNebSQ" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Jellyfish Style</td><td>DVD</td><td><a href="https://terabox.com/s/1fPoH6f7vobo3BaOJf1G0VQ" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>At Tower Records 1993</td><td>DVD</td><td><a href="https://drive.google.com/drive/folders/1SCisRM7JBAXYD8Ihx0splO-UpvSfoslu" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Jellyfish TV</td><td>DVD</td><td><a href="https://terabox.com/s/1HSG90TLwCm9tkrWza1xm3w" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>True Believer 1993</td><td>CD</td><td><a href="https://terabox.com/s/1MExTC-PdaeBQki2ufOMbIQ" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Socrates, Pathos &amp; Plato 1993</td><td>CD</td><td><a href="https://terabox.com/s/1gwxBcz18lLKHsFSOsC19RA" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Spilt Milk (The A Capella Versions)</td><td>CD</td><td><a href="https://drive.google.com/drive/folders/1oTVKbNvo1BlOM99PZPYug4EE3HR3eghQ?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+            <tr><td>Bellybutton (The A Capella Versions)</td><td>CD</td><td><a href="https://drive.google.com/drive/folders/1b-IKOfxUzcAW3v0nSM_0bDkVxNnN-7EE?usp=drive_link" target="_blank" rel="noopener noreferrer">ONLINE</a></td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </section>
+    <!-- 🔚 END BOOTLEGS -->
+<!-- 🟣 TV-APPEARANCES SECTION -->
+<section id="tv-appearances" style="margin-top: 3rem; text-align: center;">
+  <h2 style="
+    color: #f7d85a;
+    margin-bottom: 1.2rem;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    text-shadow: 0 0 12px rgba(255, 220, 100, 0.5);
+  ">
+    TV-Appearances
+  </h2>
+
+  <div style="
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 2rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(255, 220, 120, 0.2);
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  ">
+
+    <!-- Bandfoto links -->
+    <div style="flex: 1; min-width: 280px; max-width: 380px;">
+      <img src="media/jellyfish-band-pic.jpg" alt="Jellyfish Band" style="
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(255, 220, 120, 0.4);
+      ">
+    </div>
+
+    <!-- Tabelle rechts -->
+    <div style="flex: 2; min-width: 360px;">
+      <style>
+        .tg-tv {
+          border-collapse: collapse;
+          border-spacing: 0;
+          width: 100%;
+        }
+        .tg-tv td {
+          background-color: rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(200,200,200,0.6);
+          color: #222;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          font-size: 14px;
+          padding: 8px 10px;
+          text-align: left;
+        }
+        .tg-tv th {
+          background-color: rgba(255, 80, 50, 0.9);
+          color: #fff;
+          border: 1px solid rgba(200,200,200,0.5);
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          font-size: 14px;
+          font-weight: bold;
+          padding: 10px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .tg-tv a {
+          color: #c84434;
+          font-weight: bold;
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+        .tg-tv a:hover {
+          color: #ff6633;
+          text-decoration: underline;
+        }
+      </style>
+
+      <table class="tg-tv">
+        <thead>
+          <tr>
+            <th>TITLE</th>
+            <th>CONTENT</th>
+            <th>YEAR</th>
+            <th>DOWNLOAD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>MTV News</td><td>Report</td><td>1990</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcQ3lFeG1QQy1ScTg/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>KABC L.A TV News</td><td>Report</td><td>1990</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcSDdJT1FvWXpIT1E/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>MTV News</td><td>Reports</td><td>1990/1991</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwceHhGNGNMeWR0b1E/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>The 8-15 From Manchester</td><td>Performance/Interview</td><td>1991</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcczE2UnRiQ0xiY3c/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>MTV Springbreak, Daytona Beach</td><td>Performance</td><td>1991</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcbE40d09UX3pIMmM/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>At David Letterman</td><td>Performance</td><td>1991</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcTkwzalBDZF9EcGs/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>Battle Of The Bands</td><td>Performance</td><td>1993</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcdUJlVWliMEtma28/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>Japan TV SOS Pink Lady</td><td>Performance</td><td>1993</td><td><a href="https://drive.google.com/file/d/0B_C-BBj8GgwcWUJudnJBNnFhV1k/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+          <tr><td>The Beat (3 Songs)</td><td>Performance</td><td>1993</td><td><a href="https://terabox.com/s/1ct2q7HfJrXpf4KwBccCyJg" target="_blank">ONLINE</a></td></tr>
+          <tr><td>Swedish Television</td><td>Interview/Performance</td><td>1993</td><td><a href="https://drive.google.com/file/d/18Y_Z-nHWeaqH7CswCFfL0m3M91PDdZzr/view?usp=sharing" target="_blank">ONLINE</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<!-- 🟣 MUSIC VIDEOS SECTION -->
+<div class="video-list">
+
+  <!-- The King Is Half-Undressed -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/King1.jpg" alt="The King Is Half-Undressed">
+    <div class="video-info">
+      <h2>The King Is Half-Undressed</h2>
+      <p class="duration">Duration: 03:46</p>
+      <div class="meta">
+        <div>YEAR <span>1991</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+      <a href="https://drive.google.com/file/d/0B_C-BBj8Ggwcc3hUbkVrdFhTbDQ/view?usp=sharing&resourcekey=0-fngvuaN3kjJcchGege5cbA" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V1</button>
+      </a>
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcaHhiWWhyMU9vV0E/view?usp=sharing&resourcekey=0-6X59zlhLy-CK887MCtoQBQ" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V2</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- That Is Why -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/why.jpg" alt="That Is Why">
+    <div class="video-info">
+      <h2>That Is Why</h2>
+      <p class="duration">Duration: 03:41</p>
+      <div class="meta">
+        <div>DATE <span>1991</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcZzNQdFo2N082dm8/view?usp=sharing&resourcekey=0-6B34l74VEtH3T9XH8EZ8ug" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V1</button>
+      </a>
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcUWNid2lPamsyNFk/view?usp=sharing&resourcekey=0-MZ4ezyx3ekgm6T1kUvrsSw" rel="noopener">
+        <button class="download-btn">DOWNLOAD V2</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Baby’s Coming Back -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/baby.jpg" alt="Baby's Coming Back">
+    <div class="video-info">
+      <h2>Baby's Coming Back</h2>
+      <p class="duration">Duration: 03:07</p>
+      <div class="meta">
+        <div>DATE <span>1991</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcT09wUXRTUFdVNUk/view?usp=sharing&resourcekey=0-1ovz0CWYWK8p_ZVJsxiI8g" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V1</button>
+      </a>
+      <a href="https://drive.google.com/file/d/0B_C-BBj8Ggwcb2hNN1N6a1JCQWM/view?usp=sharing&resourcekey=0-fEAFuBOv4emiFrFEUS9Mqg" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V2</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Baby’s Coming Back (Bluescreen Footage) -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/baby-blue.jpg" alt="Baby's Coming Back (Bluescreen Footage)">
+    <div class="video-info">
+      <h2>Baby's Coming Back (Bluescreen Footage)</h2>
+      <p class="duration">Duration: 02:54</p>
+      <div class="meta">
+        <div>DATE <span>1991</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcZlJnd29yTDM4TjQ/view?usp=sharing&resourcekey=0-YTQLMQOOdiSVW1z_XrENvg" target="_blank" rel="noopener">
+      <button class="download-btn">DOWNLOAD</button>
+    </a>
+  </div>
+
+  <!-- The Ghost At Number One -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/ghost1.jpg" alt="The Ghost At Number One">
+    <div class="video-info">
+      <h2>The Ghost At Number One</h2>
+      <p class="duration">Duration: 03:39</p>
+      <div class="meta">
+        <div>DATE <span>1993</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcemEyVnMzRzZJZGs/view?usp=sharing&resourcekey=0-_VE3Mzt3hUOTY473vwjnBA" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V1</button>
+      </a>
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcSVhrTko1b0c2NDQ/view?usp=sharing&resourcekey=0-HLFFOhIpb5sHJ-thzFo7wg" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V2</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- The Ghost At Number One (Alternate Music Video) -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/ghost2.jpg" alt="The Ghost At Number One (Alternate Music Video)">
+    <div class="video-info">
+      <h2>The Ghost At Number One <small>(Alternate Music Video)</small></h2>
+      <p class="duration">Duration: 03:36</p>
+      <div class="meta">
+        <div>DATE <span>1993</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcODdsMUE5Z0JFWTg/view?usp=sharing&resourcekey=0-oZ5ndFq4b8FExcu6qX8dIg" target="_blank" rel="noopener">
+      <button class="download-btn">DOWNLOAD</button>
+    </a>
+  </div>
+
+  <!-- The Ghost At Number One (Raw Edits) -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/ghost3.jpg" alt="The Ghost At Number One (Raw Edits)">
+    <div class="video-info">
+      <h2>The Ghost At Number One <small>(RAW EDITS)</small></h2>
+      <p class="duration">Duration: 07:14</p>
+      <div class="meta">
+        <div>DATE <span>1993</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <a href="https://drive.google.com/file/d/0B_C-BBj8Ggwcck90aU1Hc0ZVSWM/view?usp=sharing&resourcekey=0-9zpJQHWEcAnGIx_PL5MpUA" target="_blank" rel="noopener">
+      <button class="download-btn">DOWNLOAD</button>
+    </a>
+  </div>
+
+  <!-- New Mistake -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/mistake.jpg" alt="New Mistake">
+    <div class="video-info">
+      <h2>New Mistake</h2>
+      <p class="duration">Duration: 04:17</p>
+      <div class="meta">
+        <div>DATE <span>1993</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcZFQzcERHREFYY3c/view?usp=sharing&resourcekey=0-AGAxkSGQkjXIzcobfowMrA" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V1</button>
+      </a>
+      <a href="https://drive.google.com/file/d/0B_C-BBj8GgwcNDlUWlI5ZEd4UGc/view?usp=sharing&resourcekey=0-JaJ3d6DuP8ub8tuaop-q3Q" target="_blank" rel="noopener">
+        <button class="download-btn">DOWNLOAD V2</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Weight Of The World -->
+  <div class="video-card" data-category="music-videos">
+    <img src="media/thumbnails/weight.jpg" alt="Weight Of The World (Ringo Starr ft. Roger & Andy)">
+    <div class="video-info">
+      <h2>Weight Of The World <small>(Ringo Starr ft. Roger & Andy)</small></h2>
+      <p class="duration">Duration: 03:48</p>
+      <div class="meta">
+        <div>DATE <span>1993</span></div>
+        <div>STATUS <span class="status-online">ONLINE</span></div>
+      </div>
+    </div>
+    <a href="https://drive.google.com/drive/folders/1Fs6fQEXVY4p2owuMdV61dxrmVGMrnE7E?usp=sharing" target="_blank" rel="noopener">
+      <button class="download-btn">DOWNLOAD V1</button>
+    </a>
+  </div>
+
+</div>
+  </main>
+
+  <a href="impressum.html" class="impressum-link">Impressum</a>
+
+  <div class="about-panel">
+    <div class="about-trigger">ABOUT</div>
+    <div class="about-content">
+      <h3>WHO ARE WE?</h3>
+      <p>We’re simply a group of Jellyfish fans who decided to collect and preserve everything we could find — so that fans all around the world can continue to enjoy the magic of Jellyfish.</p>
+      <h3>TEAM</h3>
+      <p>Kai Danzberg<br>Johnnie J. Young</p>
+      <h3>SPECIAL THANKS TO</h3>
+      <p>Remco Terhoeven</p>
+      <h3>WEBSITE CREATOR</h3>
+      <p>Kai Danzberg</p>
+    </div>
+  </div>
+
+  <div class="help-panel">
+    <div class="help-trigger">HELP&nbsp;US!</div>
+    <div class="help-content">
+      <p>We’re always looking for missing or unreleased Jellyfish recordings. Maybe you have digital files or old analog tapes — and you’re not sure how to transfer them. We can help!</p>
+      <p>If you think you have something interesting, please send us an</p>
+      <p class="email-line"><a href="mailto:kontakt@bungeroth.com">E-MAIL</a></p>
+      <p>Thank you for helping preserve the Jellyfish legacy!</p>
+    </div>
+  </div>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-buttons button');
+  const cards = document.querySelectorAll('.video-card');
+  const bootlegsSection = document.querySelector('#bootlegs');
+  const tvSection = document.querySelector('#tv-appearances');
+
+  function showCategory(cat) {
+    // 🔸 Alles ausblenden
+    cards.forEach(c => c.style.display = 'none');
+    if (bootlegsSection) bootlegsSection.style.display = 'none';
+    if (tvSection) tvSection.style.display = 'none';
+
+    // 🔸 Richtige Kategorie einblenden
+    if (cat === 'concerts' || cat === 'music-videos') {
+      cards.forEach(c => {
+        if (c.dataset.category === cat) c.style.display = 'flex';
+      });
+    } else if (cat === 'bootlegs' && bootlegsSection) {
+      bootlegsSection.style.display = 'block';
+    } else if (cat === 'tv' && tvSection) {
+      tvSection.style.display = 'block';
+    }
+  }
+
+  // Klick-Events
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cat = btn.getAttribute('data-category');
+      showCategory(cat);
+    });
+  });
+
+  // Standard-Ansicht: Concerts
+  window.addEventListener('DOMContentLoaded', () => {
+    showCategory('concerts');
+  });
+</script>
+</body>
+</html>

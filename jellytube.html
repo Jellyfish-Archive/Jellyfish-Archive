@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>JellyTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+      background: #000; /* falls Canvas nicht lädt */
+    }
+/* 🌈 Hintergrund – fest, nicht verzerrt, klickt nicht blockierend */
+#bokehCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 50%, #ffbfd1 0%, #f2799e 60%, #a32a4f 100%);
+  transition: background 2.5s ease;
+  object-fit: cover;
+}
+
+/* ✨ Overlay – smooth, groß */
+.video-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+.video-overlay.active { opacity: 1; pointer-events: all; }
+
+    .video-frame {
+      width: 96vw;
+      height: 85vh;
+      max-width: 1600px;
+      border-radius: 18px;
+      overflow: hidden;
+      transform: scale(0.94);
+      opacity: 0;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+      box-shadow: 0 0 80px rgba(255,180,220,0.7),
+                  0 0 140px rgba(255,120,200,0.4);
+      position: relative;
+      background: #000;
+    }
+    .video-overlay.active .video-frame { transform: scale(1); opacity: 1; }
+    .video-frame iframe { width: 100%; height: 100%; border: 0; display:block; }
+
+    /* kleiner Fallback-Link (z.B. für Odysee, falls blockiert) */
+    .overlay-linkout {
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      background: rgba(255,255,255,0.15);
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      text-decoration: none;
+      color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    /* Klickschutz aufheben */
+    #bokehCanvas, .sparkle-container, .sparkle { pointer-events: none !important; }
+
+    .back-link, .light-switch, .logo-wrap, .video-category { position: relative; z-index: 10; }
+
+    /* Back Button */
+    .back-link {
+      position: fixed;
+      top: 30px; left: 40px;
+      color: #fff; font-weight: 700; font-size: 1.1rem;
+      text-decoration: none;
+      background: rgba(255,255,255,0.15);
+      padding: 10px 16px; border-radius: 10px;
+      transition: all 0.3s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.25);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+    }
+    .back-link:hover {
+      background: rgba(255,255,255,0.3);
+      box-shadow: 0 0 25px rgba(255,180,220,0.7);
+      transform: translateX(-3px);
+    }
+
+    /* Logo */
+    .logo-wrap {
+  position: relative;
+  display: inline-block;
+  margin-top: 4rem;
+  margin-bottom: 1rem;
+}
+
+.jelly-logo {
+  width: 280px;
+  position: relative;
+  display: block;
+  animation: glowPulse 6s ease-in-out infinite;
+  transition: transform .3s ease;
+  filter: drop-shadow(0 0 12px rgba(255,190,220,0.6));
+}
+.jelly-logo:hover { transform: scale(1.1); }
+
+/* ✨ zusätzlicher Funkel-Layer */
+.sparkle-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle-dot {
+  position: absolute;
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0;
+  filter: blur(1px);
+  animation: sparkleFlash 2s linear infinite;
+}
+
+/* sanftes Scheinen */
+@keyframes glowPulse {
+  0%   { filter: drop-shadow(0 0 10px rgba(255,160,210,0.4)) brightness(1); }
+  40%  { filter: drop-shadow(0 0 22px rgba(255,220,255,1)) brightness(1.4); }
+  60%  { filter: drop-shadow(0 0 28px rgba(255,210,250,0.9)) brightness(1.3); }
+  100% { filter: drop-shadow(0 0 10px rgba(255,160,210,0.4)) brightness(1); }
+}
+
+/* flüchtiges Funkeln */
+@keyframes sparkleFlash {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  10% { opacity: 1; transform: scale(1.2); }
+  30% { opacity: 0.5; transform: scale(0.8); }
+  50% { opacity: 0; transform: scale(0.4); }
+}
+    /* 🧩 Kategorie-Karten */
+    .video-category {
+      width: 92%;
+      margin: 3.2rem auto 0;
+      padding: 1.6rem 1.2rem 2.2rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 25px rgba(255,180,220,0.12);
+    }
+   .video-category h2 {
+  font-size: 1.4rem;
+  margin: 0 0 .8rem 0;
+  color: #ffeaf7;
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 15px rgba(255,200,240,0.7);
+}
+.video-category .jellytube-grid {
+  justify-content: center;
+}
+    @keyframes titleGlow {
+      0% { text-shadow: 0 0 10px rgba(255,180,220,0.6); }
+      100% { text-shadow: 0 0 28px rgba(255,230,255,1); }
+    }
+
+    /* 🔳 Grid – kleinere, elegante Thumbs (4–5 pro Reihe) */
+   .jellytube-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;   /* Zentriert alle Zeilen */
+  gap: 1.1rem;
+  padding: .5rem .2rem 0;
+}
+
+.jellytube-item {
+  flex: 0 1 260px;           /* ca. 4–5 Videos pro Zeile */
+  max-width: 300px;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+  transition: transform 0.25s ease, box-shadow 0.3s ease;
+  background: #000;
+}
+.jellytube-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 35px rgba(255,150,200,0.5);
+}
+.jellytube-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+   .jellytube-item .title {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.15));
+  color: #fff0fa;
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+}
+
+    /* Light switch */
+    .light-switch {
+      position: fixed; top: 28px; right: 40px;
+      z-index: 1000; cursor: pointer; user-select: none;
+    }
+    .switch-track {
+      width: 68px; height: 34px;
+      background: rgba(255,255,255,0.22);
+      border-radius: 22px; backdrop-filter: blur(10px);
+      box-shadow: inset 0 2px 6px rgba(255,255,255,0.3), 0 0 14px rgba(255,150,255,0.2);
+      display: flex; align-items: center; padding: 4px; position: relative;
+      transition: all 0.4s ease;
+    }
+   .switch-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #ece1f5 60%, #b874d6 100%);
+  box-shadow: 0 0 8px rgba(255,255,255,0.8),
+              inset 0 2px 6px rgba(255,255,255,0.5);
+  transition: all 0.4s ease;
+}
+
+/* ✨ Bewegung & Glow im Darkmode */
+body.dark-mode .switch-thumb {
+  transform: translateX(32px);
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #ffdfff 50%, #c94bc9 100%);
+  box-shadow: 0 0 25px rgba(255,170,255,0.9);
+}
+    .switch-light {
+      position: absolute; right: -14px; top: 6px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,200,255,0.05) 80%);
+      box-shadow: 0 0 5px rgba(255,255,255,0.3); opacity: 0.4; transition: all .6s ease;
+    }
+   /* 🌙 Dark Mode */
+body.dark-mode {
+transition: background-color 1s ease, color 1s ease;
+  background-color: #0d0010;
+  color: #f9eaff;
+}
+
+body.dark-mode #bokehCanvas {
+  background: radial-gradient(circle at 50% 50%, #2a001e 0%, #150015 60%, #000 100%) !important;
+  transition: background 1.5s ease;
+}
+
+body.dark-mode .jelly-logo {
+  content: url("media/jellytubelogo_white.png");
+  filter: drop-shadow(0 0 18px rgba(255,240,255,0.8)) brightness(1.3);
+}
+
+body.dark-mode .video-category {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 20px rgba(255,150,220,0.08);
+}
+
+body.dark-mode .back-link {
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 15px rgba(255,180,220,0.2);
+}
+
+body.dark-mode .video-category h2 {
+  color: #ffd8f9;
+  text-shadow: 0 2px 8px rgba(255, 200, 255, 0.4);
+}
+
+body.dark-mode .jellytube-item {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+body.dark-mode .jellytube-item:hover {
+  box-shadow: 0 10px 25px rgba(255,150,220,0.5);
+}
+
+#introOverlay {
+  z-index: 100000; /* etwas höher als das Video-Overlay */
+}
+/* 🚫 Entfernt überschüssigen Leerraum am Seitenende */
+#jellytube {
+  min-height: auto !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.video-category {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+}
+
+.video-category:last-of-type {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Entfernt möglichen "optischen" Canvas-Abstand */
+body {
+  overflow-y: auto;
+}
+    </style>
+
+    <!-- 📱 Zuverlässige mobile Weiterleitung -->
+  <script>
+  (function() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini/.test(ua);
+
+    // Korrektes Basisverzeichnis berechnen (wichtig für GitHub Pages)
+    const path = window.location.pathname;
+    const base = path.substring(0, path.lastIndexOf('/') + 1);
+
+    // Weiterleitung, wenn auf mobilem Gerät
+    if (isMobile && !window.location.href.includes("mobile.html")) {
+      window.location.href = base + "mobile.html";
+    }
+  })();
+  </script>
+</head>
+<body>
+
+<section id="jellytube" style="position:relative; overflow:hidden; text-align:center;">
+
+  <canvas id="bokehCanvas"></canvas>
+
+  <a href="video.html" class="back-link"><span class="arrow">←</span> Back to Archive</a>
+
+  <div class="light-switch" id="lightSwitch">
+    <div class="switch-track">
+      <div class="switch-thumb"></div>
+      <div class="switch-light"></div>
+    </div>
+  </div>
+
+  <div class="logo-wrap">
+    <img src="media/jellytubelogo.png" alt="JellyTube Logo" class="jelly-logo">
+  </div>
+
+  <!-- 🎸 CONCERTS -->
+  <div class="video-category">
+    <h2>Concerts</h2>
+    <div class="jellytube-grid">
+
+      <!-- Odysee: Frankfurter Music Hall 1991 (HD) -->
+      <div class="jellytube-item" data-type="odysee" data-embed="https://odysee.com/$/embed/JellyfishMusicHall91:3" data-link="https://odysee.com/@Jellyfish-Archive:5/JellyfishMusicHall91:3">
+        <img src="media/odysee_placeholder.jpg" alt="">
+        <div class="title">Frankfurter Music Hall 1991 (HD Remaster)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="RO6JEX_I970">
+        <img src="https://img.youtube.com/vi/RO6JEX_I970/hqdefault.jpg" alt="">
+        <div class="title">Nachtwerk Munich 1993 (HD)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="eB0Ec1Scsxg">
+        <img src="https://img.youtube.com/vi/eB0Ec1Scsxg/hqdefault.jpg" alt="">
+        <div class="title">New Orleans 1993 (HD)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="5EpafJ78PXs">
+        <img src="https://img.youtube.com/vi/5EpafJ78PXs/hqdefault.jpg" alt="">
+        <div class="title">2 Meter Sessies 1993 (4K)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="iHn_PpPwRIQ">
+        <img src="https://img.youtube.com/vi/iHn_PpPwRIQ/hqdefault.jpg" alt="">
+        <div class="title">SIR Studios NYC 1990</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="WBQhS2OEotI">
+        <img src="https://img.youtube.com/vi/WBQhS2OEotI/hqdefault.jpg" alt="">
+        <div class="title">Club Lingerie 1990</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="PgTK7vv2ZuU">
+        <img src="https://img.youtube.com/vi/PgTK7vv2ZuU/hqdefault.jpg" alt="">
+        <div class="title">The Roxy 1993</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="mgeKlK-rq78">
+        <img src="https://img.youtube.com/vi/mgeKlK-rq78/hqdefault.jpg" alt="">
+        <div class="title">Tower Records Philly 1993 V1</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="beJ2208n_UI">
+        <img src="https://img.youtube.com/vi/beJ2208n_UI/hqdefault.jpg" alt="">
+        <div class="title">Tower Records Philly V2</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="lJMIVZ5OF44">
+        <img src="https://img.youtube.com/vi/lJMIVZ5OF44/hqdefault.jpg" alt="">
+        <div class="title">Tower Records, Austin 1993</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="BTv6BaxiDic">
+        <img src="https://img.youtube.com/vi/BTv6BaxiDic/hqdefault.jpg" alt="">
+        <div class="title">Honolulu 1993</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="dakEyrTs-kI">
+        <img src="https://img.youtube.com/vi/dakEyrTs-kI/hqdefault.jpg" alt="">
+        <div class="title">Magic Mountain 1993</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🎬 MUSIC VIDEOS -->
+  <div class="video-category">
+    <h2>Music Videos</h2>
+    <div class="jellytube-grid">
+
+      <div class="jellytube-item" data-type="youtube" data-video="YuCuaEKHqMI">
+        <img src="https://img.youtube.com/vi/YuCuaEKHqMI/hqdefault.jpg" alt="">
+        <div class="title">The King Is Half-Undressed</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="GNYrej4aMvI">
+        <img src="https://img.youtube.com/vi/GNYrej4aMvI/hqdefault.jpg" alt="">
+        <div class="title">Baby’s Coming Back</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="YgKjC2V4xfk">
+        <img src="https://img.youtube.com/vi/YgKjC2V4xfk/hqdefault.jpg" alt="">
+        <div class="title">The Ghost At #1</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="qQTj_2mMfSA">
+        <img src="https://img.youtube.com/vi/qQTj_2mMfSA/hqdefault.jpg" alt="">
+        <div class="title">That Is Why</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="eHvgQDRpA-s">
+        <img src="https://img.youtube.com/vi/eHvgQDRpA-s/hqdefault.jpg" alt="">
+        <div class="title">New Mistake</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="iA6FwNuX_U8">
+        <img src="https://img.youtube.com/vi/iA6FwNuX_U8/hqdefault.jpg" alt="">
+        <div class="title">The Ghost At #1 (Raw)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="J7pUbVcGM5U">
+        <img src="https://img.youtube.com/vi/J7pUbVcGM5U/hqdefault.jpg" alt="">
+        <div class="title">Baby’s Coming Back (Blue Screen)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="5zEjDReWRA0">
+        <img src="https://img.youtube.com/vi/5zEjDReWRA0/hqdefault.jpg" alt="">
+        <div class="title">Weight of the World</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🎤 PERFORMANCES -->
+  <div class="video-category">
+    <h2>Performances</h2>
+    <div class="jellytube-grid">
+
+      <div class="jellytube-item" data-type="youtube" data-video="GutS9FuuW1U">
+        <img src="https://img.youtube.com/vi/GutS9FuuW1U/hqdefault.jpg" alt="">
+        <div class="title">The Ghost At #1 (The Beat 1993)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="NmPJ6INNYM8">
+        <img src="https://img.youtube.com/vi/NmPJ6INNYM8/hqdefault.jpg" alt="">
+        <div class="title">New Mistake (BOTB 1993)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="VpXMIsIKuGs">
+        <img src="https://img.youtube.com/vi/VpXMIsIKuGs/hqdefault.jpg" alt="">
+        <div class="title">All I Want (Letterman 1990)</div>
+      </div>
+ 
+      <div class="jellytube-item" data-type="youtube" data-video="Y-Rzvy3sz-U">
+        <img src="https://img.youtube.com/vi/Y-Rzvy3sz-U/hqdefault.jpg" alt="">
+        <div class="title">Ghost & Bye Bye Bye (Jools Holland 1993)</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 📺 TV APPEARANCES -->
+  <div class="video-category">
+    <h2>TV Appearances</h2>
+    <div class="jellytube-grid">
+
+      <div class="jellytube-item" data-type="youtube" data-video="Oj4kc8aNowU">
+        <img src="https://img.youtube.com/vi/Oj4kc8aNowU/hqdefault.jpg" alt="">
+        <div class="title">Japan 1993 Report</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="hZIjWXPt3xs">
+        <img src="https://img.youtube.com/vi/hZIjWXPt3xs/hqdefault.jpg" alt="">
+        <div class="title">Swedish Interview + Performance</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="WoeXd8sg5_o">
+        <img src="https://img.youtube.com/vi/WoeXd8sg5_o/hqdefault.jpg" alt="">
+        <div class="title">KUKQ’s Birthday Bash ’91</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="XDayiOHTrWw">
+        <img src="https://img.youtube.com/vi/XDayiOHTrWw/hqdefault.jpg" alt="">
+        <div class="title">Much Music Canada 1991</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="piiDchpCe5A">
+        <img src="https://img.youtube.com/vi/piiDchpCe5A/hqdefault.jpg" alt="">
+        <div class="title">Record Store Interview (MTV)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="2d0AiZjBpP8">
+        <img src="https://img.youtube.com/vi/2d0AiZjBpP8/hqdefault.jpg" alt="">
+        <div class="title">Eleanor Rigby + Interview (JP 1993)</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="hR-JDpVDLL0">
+        <img src="https://img.youtube.com/vi/hR-JDpVDLL0/hqdefault.jpg" alt="">
+        <div class="title">MTV News</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="JZI47zm2S-s">
+        <img src="https://img.youtube.com/vi/JZI47zm2S-s/hqdefault.jpg" alt="">
+        <div class="title">Much Music Canada Interview 1991</div>
+      </div>
+
+      <div class="jellytube-item" data-type="youtube" data-video="KNNvkX2ZEL4">
+        <img src="https://img.youtube.com/vi/KNNvkX2ZEL4/hqdefault.jpg" alt="">
+        <div class="title">KABC L.A TV News 11/29/90</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="videoOverlay" class="video-overlay">
+    <div class="video-frame" id="videoFrame">
+      <iframe id="playerFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <a id="overlayLinkOut" class="overlay-linkout" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open original</a>
+    </div>
+  </div>
+
+</section>
+
+<script>
+/* 🌸 Bokeh Background */
+const canvas = document.getElementById('bokehCanvas');
+const ctx = canvas.getContext('2d');
+let bokehs = [];
+function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas); resizeCanvas();
+function createBokeh(){ return {
+  x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+  r: 20 + Math.random()*100, a: 0.08 + Math.random()*0.12,
+  dx: (Math.random()-0.5)*0.3, dy: (Math.random()-0.5)*0.3,
+  color: `rgba(${230+Math.random()*25}, ${70+Math.random()*50}, ${140+Math.random()*90}, 1)`
+};}
+for (let i=0;i<40;i++) bokehs.push(createBokeh());
+function animateBokeh(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.globalCompositeOperation="lighter";
+  for (let b of bokehs){
+    const g = ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+    g.addColorStop(0,b.color); g.addColorStop(1,"transparent");
+    ctx.fillStyle=g; ctx.globalAlpha=b.a;
+    ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+    b.x+=b.dx; b.y+=b.dy;
+    if (b.x<-b.r) b.x = canvas.width + b.r;
+    if (b.x>canvas.width + b.r) b.x = -b.r;
+    if (b.y<-b.r) b.y = canvas.height + b.r;
+    if (b.y>canvas.height + b.r) b.y = -b.r;
+  }
+  requestAnimationFrame(animateBokeh);
+}
+animateBokeh();
+// 🪄 Bokeh bleibt fixiert, aber Seite endet bündig
+document.getElementById('jellytube').style.marginBottom = '0';
+
+// 🔧 Canvas-Größe aktuell halten – korrekt & sicher
+function sizeCanvas() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+document.body.style.height = "auto";
+document.documentElement.style.height = "auto";
+}
+
+window.addEventListener('resize', sizeCanvas);
+sizeCanvas();
+
+/* 🎥 Overlay Controller */
+const overlay = document.getElementById('videoOverlay');
+const frame = document.getElementById('playerFrame');
+const frameWrap = document.getElementById('videoFrame');
+const linkOut = document.getElementById('overlayLinkOut');
+
+document.querySelectorAll('.jellytube-item').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    const type = card.getAttribute('data-type');
+
+    if (type === 'youtube'){
+      const id = card.getAttribute('data-video');
+      const url = `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1`;
+      frame.src = url;
+      linkOut.style.display = 'none';
+    } else if (type === 'odysee'){
+      const embed = card.getAttribute('data-embed'); // e.g. https://odysee.com/$/embed/slug:claim
+      const link  = card.getAttribute('data-link');
+      frame.src = embed;
+      // Linkout anbieten, falls Embed geblockt wird
+      linkOut.href = link;
+      linkOut.style.display = 'inline-block';
+    }
+
+    overlay.classList.add('active');
+  });
+});
+
+// klick auf Overlay schließt
+overlay.addEventListener('click', ()=>{
+  overlay.classList.remove('active');
+  setTimeout(()=>{ frame.src = ''; }, 600);
+});
+
+// Klick innerhalb des Frames stoppen
+frameWrap.addEventListener('click', e => e.stopPropagation());
+
+/* 💡 Light Switch – wechselt hellrosa ↔ dunkel-pink */
+const switchBtn = document.getElementById('lightSwitch');
+let clickSound;
+try { clickSound = new Audio('media/switch_click.mp3'); } catch(e){ /* ignore */ }
+switchBtn.addEventListener('click', () => {
+  if (clickSound) { clickSound.currentTime = 0; clickSound.play(); }
+
+  const isDark = document.body.classList.toggle('dark-mode');
+
+  // Vorherige Inline-Styles vom Body neutralisieren
+  document.body.style.background = '';
+  document.body.style.backgroundColor = '';
+
+  if (isDark) {
+    // 🌑 Dunkler Modus – Canvas dunkel-pink
+    canvas.style.background = "radial-gradient(circle at 50% 50%, #2a001e 0%, #150015 60%, #000 100%)";
+
+    for (let b of bokehs) {
+      b.color = `rgba(${120 + Math.random()*40}, ${30 + Math.random()*20}, ${70 + Math.random()*40}, 1)`;
+      b.a = 0.1 + Math.random()*0.15;
+    }
+  } else {
+    // 🌸 Heller Modus – Canvas hell-pink
+    canvas.style.background = "radial-gradient(circle at 50% 50%, #ffbfd1 0%, #f2799e 60%, #a32a4f 100%)";
+
+    for (let b of bokehs) {
+      b.color = `rgba(${230 + Math.random()*25}, ${70 + Math.random()*50}, ${140 + Math.random()*90}, 1)`;
+      b.a = 0.08 + Math.random()*0.12;
+    }
+  }
+});
+</script>
+<!-- 🪩 Intro Overlay -->
+<div id="introOverlay">
+  <div id="introContent">
+    <div id="closeIntro">✕</div>
+    <h2>Welcome to the JellyTube</h2>
+    <p>
+      Why not have our own Jellyfish YouTube?<br><br>
+      The JellyTube is a curated collection of Jellyfish concerts, performances, and interviews — 
+      so you don’t have to search them yourself.<br><br>
+      It’s updated whenever new or missing content appears. Enjoy exploring!
+    </p>
+  </div>
+</div>
+
+<style>
+/* 🌟 INTRO OVERLAY – Edler Look */
+#introOverlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(25,0,35,0.85), rgba(0,0,0,0.85));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+#introOverlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#introContent {
+  position: relative;
+  background: rgba(45,0,55,0.65);
+  backdrop-filter: blur(14px) saturate(140%);
+  padding: 2.8rem 3rem;
+  border-radius: 22px;
+  max-width: 600px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 0 60px rgba(255,130,230,0.4),
+              0 0 120px rgba(255,100,200,0.25);
+  transform: translateY(40px) scale(0.95);
+  opacity: 0;
+  border: 2px solid rgba(255,180,240,0.25);
+  animation: borderPulse 6s ease-in-out infinite;
+  transition: transform 0.7s cubic-bezier(0.25,1,0.3,1), opacity 0.8s ease;
+}
+#introOverlay.active #introContent {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+@keyframes borderPulse {
+  0%,100% {
+    box-shadow: 0 0 40px rgba(255,180,240,0.4), 0 0 90px rgba(255,130,220,0.25);
+    border-color: rgba(255,200,250,0.3);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(255,230,255,0.7), 0 0 130px rgba(255,160,240,0.4);
+    border-color: rgba(255,255,255,0.4);
+  }
+}
+
+#introContent h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #ffeaf7;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 20px rgba(255,200,250,0.9);
+}
+#introContent p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #fff0fa;
+  margin: 0;
+}
+
+#closeIntro {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  font-size: 1.2rem;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#closeIntro:hover {
+  background: rgba(255,255,255,0.3);
+  box-shadow: 0 0 15px rgba(255,180,240,0.6);
+  transform: rotate(90deg);
+}
+/* 🚫 Kein überflüssiger Leerraum am Ende */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: auto;
+  overflow-x: hidden;
+}
+
+#jellytube {
+  min-height: auto !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.video-category:last-of-type {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+</style>
+
+<script>
+// 🪩 INTRO OVERLAY CONTROL – mit DOMContentLoaded-Schutz
+document.addEventListener("DOMContentLoaded", () => {
+  const intro = document.getElementById('introOverlay');
+  const closeIntro = document.getElementById('closeIntro');
+
+  if (!intro || !closeIntro) return; // Sicherheitscheck
+
+  // Nur beim ersten Besuch anzeigen
+  if (!localStorage.getItem('jellytubeVisited')) {
+    setTimeout(() => {
+      intro.classList.add('active');
+    }, 800);
+  }
+
+  // ✕ schließen
+  closeIntro.addEventListener('click', () => {
+    intro.classList.remove('active');
+    localStorage.setItem('jellytubeVisited', 'true');
+  });
+
+  // Sicherheits-Auto-Close nach 12 Sekunden
+  setTimeout(() => {
+    if (intro.classList.contains('active')) {
+      intro.classList.remove('active');
+      localStorage.setItem('jellytubeVisited', 'true');
+    }
+  }, 12000);
+});
+</script>
+
+<script>
+/* 🌟 Zufälliges Funkeln über dem Logo */
+const logoWrap = document.querySelector('.logo-wrap');
+const sparkleLayer = document.createElement('div');
+sparkleLayer.className = 'sparkle-layer';
+logoWrap.appendChild(sparkleLayer);
+
+for (let i = 0; i < 25; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'sparkle-dot';
+  dot.style.left = Math.random() * 100 + '%';
+  dot.style.top = Math.random() * 100 + '%';
+  dot.style.animationDelay = (Math.random() * 4) + 's';
+  dot.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+  sparkleLayer.appendChild(dot);
+}
+
+</script>
+</body>
+</html>
