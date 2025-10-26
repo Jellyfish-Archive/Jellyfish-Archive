@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Archive – Jellyfish Archive</title>
+
+   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+  min-height: 100%;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #fff;
+  background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto; /* erlaubt Scrollen */
+}
+
+    /* 🎥 Hintergrundvideo */
+    video.bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* 🪩 Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem 2rem;
+      background: transparent;
+    }
+
+    /* 🐠 Logo */
+    .logo {
+      width: 150px;
+      margin-bottom: 0.6rem;
+      filter: drop-shadow(0 0 10px rgba(255, 210, 80, 0.7));
+      animation: goldGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes goldGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 220, 100, 0.5)); opacity: 0.9; }
+      50% { filter: drop-shadow(0 0 22px rgba(255, 240, 180, 1)); opacity: 1; }
+    }
+
+    /* 🔸 Menü */
+    nav {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 0.3rem;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 220, 80, 0.4);
+      color: #000;
+      background: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-decoration: none;
+      text-transform: uppercase;
+      backdrop-filter: blur(3px);
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(255, 230, 100, 0.8);
+      color: #000;
+      box-shadow: 0 0 20px rgba(255, 230, 100, 0.8);
+      transform: translateY(-2px);
+    }
+
+    /* Aktiver Menüpunkt */
+    nav a.active {
+      background: rgba(255, 230, 100, 0.9);
+      color: #000;
+      box-shadow: 0 0 20px rgba(255, 230, 100, 0.9);
+      transform: none;
+    }
+
+    /* 📀 Hauptinhalt */
+    main {
+  margin-top: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: calc(100vh - 280px); /* nicht fix, sondern minimal */
+  padding-bottom: 100px; /* damit am Ende Platz bleibt */
+}
+
+    h1 {
+      color: #f7d85a;
+      margin-bottom: 0.4rem;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(255, 220, 100, 0.5);
+    }
+
+    /* 🎧 Sub-Info unter dem Titel */
+    .sub-info {
+  font-size: 0.9rem;
+  color: #000; /* schwarz */
+  margin-bottom: 1.2rem;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.4); /* leicht heller Schimmer für Lesbarkeit */
+}
+
+    /* 🪶 Tabelle */
+    .table-container {
+      width: 80%;
+      max-width: 900px;
+      height: 60vh;
+      overflow-y: auto;
+      overflow-x: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(255, 220, 100, 0.25);
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: rgba(200, 160, 0, 0.7);
+      border-radius: 4px;
+    }
+
+    .tg {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .tg td, .tg th {
+      border: 1px solid #aaa;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      padding: 6px 5px;
+      text-align: left;
+    }
+
+    .tg th {
+      background-color: #fad75c;
+      color: #000;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .tg td:nth-child(odd) { background-color: rgba(255,255,255,0.85); }
+    .tg td:nth-child(even) { background-color: rgba(250,250,250,0.85); }
+    .tg tr:hover td { background-color: rgba(255, 240, 100, 0.4); }
+
+    .tg a { color: #0055cc; text-decoration: none; font-weight: bold; }
+    .tg a:hover { text-decoration: underline; }
+
+    /* ⚓ Hochkant Impressum-Link links unten */
+    .impressum-link {
+      position: fixed;
+      bottom: 40px;
+      left: 60px;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffea80;
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .impressum-link:hover {
+      color: #fff;
+      transform: rotate(-90deg) translateY(-4px);
+      text-decoration: none;
+    }
+/* === ABOUT PANEL === */
+    .about-panel {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+    }
+
+    .about-trigger {
+      background: rgba(200, 30, 30, 0.95);
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 2px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      padding: 1rem 0.5rem;
+      border-radius: 8px 0 0 8px;
+      box-shadow: 0 0 15px rgba(255, 60, 60, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .about-content {
+      position: absolute;
+      right: -320px;
+      width: 300px;
+      background: rgba(255, 240, 180, 0.9);
+      color: #000;
+      padding: 1.5rem;
+      border-radius: 12px 0 0 12px;
+      box-shadow: -5px 0 25px rgba(255, 100, 100, 0.4);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s ease;
+    }
+
+    .about-panel:hover .about-content {
+      right: 55px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* === HELP US PANEL === */
+    .help-panel {
+      position: fixed;
+      bottom: -1px;
+      left: 120px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .help-trigger {
+      background: rgba(255, 230, 100, 0.95);
+      color: #000;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 0 10px rgba(255, 230, 100, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .help-content {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 260px;
+      background: rgba(255, 240, 180, 0.96);
+      color: #000;
+      padding: 1rem 1.2rem;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 0 18px rgba(255, 220, 100, 0.3);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s ease;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      transform: translateY(10px);
+    }
+
+    .help-panel:hover .help-content {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+  </style>
+</head>
+<body>
+
+<!-- 📱 Zuverlässige mobile Weiterleitung -->
+<script>
+  (function() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua.toLowerCase());
+
+    // Wenn mobil und nicht schon auf der mobilen Seite → weiterleiten
+    if (isMobile && !window.location.href.includes("mobile.html")) {
+      window.location.replace("mobile.html");
+    }
+  })();
+</script>
+
+<!-- 🎬 Hintergrundvideo -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="media/bgvid.mp4" type="video/mp4">
+</video>
+
+  <!-- 🧭 Header -->
+  <header>
+    <img src="media/logo.png" alt="Jellyfish Archive Logo" class="logo">
+    <nav>
+      <a href="home.html">HOME</a>
+      <a href="audio.html" class="active">AUDIO-ARCHIVE</a>
+      <a href="video.html">VIDEO-ARCHIVE</a>
+      <a href="jellytube.html">JELLYTUBE</a>
+    </nav>
+  </header>
+
+  <!-- 📂 Hauptinhalt -->
+  <main>
+    <h1>Jellyfish Audio Archive</h1>
+
+<p class="sub-info">Soundquality | VERY BAD – BAD – OK – GOOD – GREAT – EXCELLENT</p>
+    <div class="table-container">
+      <!-- 📋 Ganze Tabelle wieder eingefügt -->
+      <style type="text/css">
+.tg  {border-collapse:collapse;border-color:#aaa;border-spacing:0;}
+.tg td{background-color:#fff;border-color:#aaa;border-style:solid;border-width:1px;color:#333;
+  font-family:Arial, sans-serif;font-size:14px;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{background-color:#f38630;border-color:#aaa;border-style:solid;border-width:1px;color:#fff;
+  font-family:Arial, sans-serif;font-size:14px;font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-q2o3{border-color:inherit;color:#009901;text-align:left;vertical-align:top}
+.tg .tg-3ucz{background-color:#fad75c;border-color:inherit;text-align:left;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+.tg .tg-n0gm{border-color:inherit;color:#9a0000;text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-3ucz">DATE</th>
+    <th class="tg-3ucz">LOCATION</th>
+    <th class="tg-3ucz">RECORDING</th>
+    <th class="tg-3ucz">QUALITY</th>
+    <th class="tg-3ucz">DOWNLOAD</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">9/17/1990</td>
+    <td class="tg-0pky">First Avenue, Minneapolis, MN</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-n0gm">MISSING</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/30/1990</td>
+    <td class="tg-0pky">Lisner Auditorium, Washington, DC</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-q2o3"><a href="https://drive.google.com/drive/folders/1te4C9UEc9Y2lIftli0lZ1xiOsNvmkOKg?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/24/1990</td>
+    <td class="tg-0pky">Becker Amphitheatre, Cal State Fullerton, CA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1UV_gUcXbG36jNsQIStHVn6KEe98WNTST?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/25/1990</td>
+    <td class="tg-0pky">The Roxy, Los Angeles, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/17RF5pHGotJjRB66_tHexabKA4WO4k3IZ?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/29/1990</td>
+    <td class="tg-0pky">Chuy's, Tempe, AZ</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1Mh1f1K3pS6Y_vSRbyIHTip2hvYHCr1_E?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/11/1990</td>
+    <td class="tg-0pky">Max On Broadway, Baltimore MD</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/155STcDlrAR5m6tU4kxFTuZKPVjvOpafM?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">12/1/1990</td>
+    <td class="tg-0pky">Club Lingerie, Hollywood CA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1cr4fn4qp0kRYB0xG-CEIXHg14FFnh2gZ?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2/21/1991</td>
+    <td class="tg-0pky">Bogart‘s, Long Beach, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/14xDHXu_Qefw5_7xB8jHPzE0DRTeSqr47?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2/25/1991</td>
+    <td class="tg-0pky">Slim's SF</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1_fgzc31QzYQXAdnMNGjfD7L6zbQ4gwaV?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">3/2/1991</td>
+    <td class="tg-0pky">BAY AREA MUSIC AWARDS</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1rwip9gxtER4Qwly46osJhRKVJWt6HjBG?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">3/10/1991</td>
+    <td class="tg-0pky">The Key Largo, Portland OR</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1l6azNX9Do-RSJcqDSUN28Zo1qGGrX2HO?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">3/13/1991</td>
+    <td class="tg-0pky">Harpos Victoria, BC</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1VlOYtyUTHKOO7JFmVImezRapB_5_Bf-R?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">3/24/1991</td>
+    <td class="tg-0pky">Appfel Park, Galveston, TX</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-n0gm">MISSING</td>
+  </tr>
+  <tr>
+        <td class="tg-0pky">4/13/1991</td>
+    <td class="tg-0pky">The Catalys, Santa Cruz,CA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY GOOD</td>
+      <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1nbMUx6R-a1tYPg_R8fW9Hkw5t4YmJSNZ?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+      <td class="tg-0pky">4/29/1991</td>
+    <td class="tg-0pky">Melkweg, Amsterdam, NL</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">OK</td>
+      <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1NhlL4U7GMwubzdamNmXGezaFZsqQPjgt?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/6/1991</td>
+    <td class="tg-0pky">Frankfurter Music-Hall</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky">SOON</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/18/1991</td>
+    <td class="tg-0pky">Central Park Ballroom, Milwaukee, WI</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1rNzhE73cJ3X14-QPcRhH-boRY1gXqOUx?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+      <td class="tg-0pky">6/8/1991</td>
+    <td class="tg-0pky">Promo Radio Show,Santa Barbara, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1jNQXiuZkCFKFZVmbDqAXA62ppi5ndVy2?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+     <td class="tg-0pky">6/14/1991</td>
+    <td class="tg-0pky">KROQ Loveline Appearance</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1jNQXiuZkCFKFZVmbDqAXA62ppi5ndVy2?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/24/1991</td>
+    <td class="tg-0pky">Hard Rock Cafe, SF, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1fV40B98snFbJgCDcESLzRzhkRQPT3nKz?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">7/13/1991</td>
+    <td class="tg-0pky">Wembley Stadium (Summer XS)</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://mega.nz/folder/ScMRTLyb#H7KiyKy8P9qzPQ50sG10pQ" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">8/2/1991</td>
+    <td class="tg-0pky">The Catalyst, Santa Cruz, CA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1NF5-Nh_N_rAPY_mYmz9mLROhEhB1c-ll?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/3/1991</td>
+    <td class="tg-0pky">NBC Studios, New York, NY</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/29/1991</td>
+    <td class="tg-0pky">Amsterdam</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1Ehl3O7rBDIBaTVnR1zuaOoSaKyJCNlnE?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/6/1991</td>
+    <td class="tg-0pky">91X Radio, San Diego</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1lXrlaIHD1BoialeTqa5buSyDmwMZg24Q?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/11/1991</td>
+    <td class="tg-0pky">Live At Max’s On Broadway</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1YGPm-jC9t2J1ruKjxPVlBA3hsJ5my9n-?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">12/12/1992</td>
+    <td class="tg-0pky">Green Christmas Acoustic Show</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1op-FuI1MgfeyRO2JF4fAkavYrpy0N3fp?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">12/13/1992</td>
+    <td class="tg-0pky">Live 105 Acoustic, CA, FM broadcast</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">12/17/1992</td>
+    <td class="tg-0pky">KFOG, CA, FM Broadcast</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2/10/1993</td>
+    <td class="tg-0pky">FX, San Jose, CA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/3/1993</td>
+    <td class="tg-0pky">SIX FLAGS MAGIC MOUNTAIN, CA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/4/1993</td>
+    <td class="tg-0pky">The Coach House, San Juan Capistrano, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">EXCELLENT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1SpCB1KB9Pw3HTifOq1nJ2o-PkJruQwWk?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/10/1993</td>
+    <td class="tg-0pky">On The Edge</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1OmomG54gwRj76cJ-ZFty4DIqAG95hMlk?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/13/1993</td>
+    <td class="tg-0pky">The Roxy, Phoenix, AZ</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1M1RsKyrvs3jWJU1vIGTdtATLBj0DZcCD?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/15/1993</td>
+    <td class="tg-0pky">Liberty Lunch Austin, TX</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1VNCFj4mVR5Uxy_oEDD4Zk60WekMDq4Qo?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">4/17/1993</td>
+    <td class="tg-0pky">Norman, Oklahoma</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/file/d/1AGGVylJv_7LjefsGWDqhn5E0fqcmxJR1/view?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">5/6/1993</span></td>
+    <td class="tg-0pky">Live in Wolverhampton</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/file/d/10PzPfpmcwRU1dHMpnldR5mxvRmRCX9cU/view?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">?/?/1993</td>
+    <td class="tg-0pky">Tower Records, Phil, PA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1fZ2u7VE2mrlxFvF5iqnMgRYogAI81Eg8?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/8/1993</td>
+    <td class="tg-0pky">Red Car, UK</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1h0zwoSLPdck76kisj6uQveLHcZMnZZAj?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/26/1993</td>
+    <td class="tg-0pky">The Grand, NY</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/15gqX7yTTyj8CPBKkIMcr644mpo7ipFGj?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/27/1993</td>
+    <td class="tg-0pky">WBCN, Boston, MA interview &amp; performance</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">5/30/1993</td>
+    <td class="tg-0pky">Stone Pony, Asbury Park, NJ</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1rk72T2NdPahqo6Ayi3qoPQ0qh8ywbJUc?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+      <td class="tg-0pky">6/1/1993</td>
+    <td class="tg-0pky">Toads Place, New Haven CT, USA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1vVIXLqIuNmtIM6WHpOUnwfcO6ucbCCG2?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/4/1993</td>
+    <td class="tg-0pky">The Acardemy, New York</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1Y6cjr3e9xMEuEG0fCPNapljVLeGqK98f?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/5/1993</td>
+    <td class="tg-0pky">Trocadero, Philadelphia, PA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+     <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/19ve9wHaGjlgKXNkIXs_sjCE2kFK3saoB?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/6/1993</td>
+    <td class="tg-0pky">Events Center, San Jose, CA</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1X66HhxYei2F1HMGwAV-lhJcN0yogoo9_?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">06/08/1993</td>
+    <td class="tg-0pky">WASHINGTON, Gaston Hall (Version 1)</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/18doPkHXhTKc5OcLimh1wIVgkAa25FR0B?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/8/1993</td>
+    <td class="tg-0pky">WASHINGTON, Gaston Hall (Version 2)</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1wI0gy1qzGpBnqK0eoJ5ldEYYemuffH4j?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/28/1993</td>
+    <td class="tg-0pky">Q101 Toronto Hosts INTERVIEW</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1LL60JfD_sVXAM-gOj7XI_eQfa-HWgCMk?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/29/1993</td>
+    <td class="tg-0pky">WLUP, Chicago, IL, USA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1ahg97p2W4P6OpAb0drf1279LfDbNDKMK?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/29/1993</td>
+    <td class="tg-0pky">Cabaret Metro, Chicago IL</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1QpRTq2Xc8SRcHxEOtWe6nn51aoZLL2XQ?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/29/1993</td>
+    <td class="tg-0pky">Rose Records (Instore)</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1-4ktnYcWXptR6Bmg2bgz6UjUOd5z0y1g?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">6/30/1993</td>
+    <td class="tg-0pky">Summerfest, Wilwaukee, WI</td>
+    <td class="tg-0pky">Pofessional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1rTBpZEVlTZXgAPXLCoS02ngh6R09rKYS?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">6/30/1993</span></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">Summerfest, Wilwaukee, WI (Version 2)</span></td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1x_ary0EGJES48GMp1yr2nPrhMxwlfDUN?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">7/15/1993</td>
+    <td class="tg-0pky">Portland, OR</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">OK</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1buNQQcMqk3zklkV2nPzR4BSwPUUvHxd_?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">7/17/1993</td>
+    <td class="tg-0pky">The Warfield, SF, CA</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1ifrI4_fztHtLK14VSB5qIce3W8oFQTDP?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">7/22/1993</td>
+    <td class="tg-0pky">Wiltern Theatre, Los Angeles, CA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">7/22/1993</td>
+    <td class="tg-0pky">TOWER SUNSET INSTORE, LOS ANGELES, CA (ACOUSTIC</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/9/1993</td>
+    <td class="tg-0pky">FM Yokohama, Japan acoustic perf</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1j7C6Zmc6pTQkglgV1LETImDgbiySHd8T?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/9/1993</td>
+    <td class="tg-0pky">JAPAN</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1WsKqpN4PdNKVq0IsZF5uePZ9qFPMGTbz?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/13/1993</td>
+    <td class="tg-0pky">Live @ Club Quattro, Japan</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1rRptoF3k7wJMokSXayx9__ViRt4cdv2_?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/14/1993</td>
+    <td class="tg-0pky">Nagoya Quattro, Japan</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1juJcrAH23wN8siiOiSgQtI-lOLF8jdqK?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/15/1993</td>
+    <td class="tg-0pky">Tokyo, Japan</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1-vEpyDXHklKe5XJSEnfYsfeuqMJKw4Q9?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">9/19/1993</td>
+    <td class="tg-0pky">Tokyo, Japan</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1pj94uwkxKZUzAZTf72gZ2T3PK0MsgsO0?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">10/??/1993</span></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">ABC Studios (Acoustic)</span></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">Professional</span></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal">EXCELLENT</span></td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1aHOI2FEcoWg4IxVn73b18QlJpb_VGZ8e?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/3/1993</td>
+    <td class="tg-0pky">2 Meter Sessies (Acoustic Show)</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">EXCELLENT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1aLSuIMWIAG8UVO2VeeK4--5Kv-jzM2iW?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/5/1993</td>
+    <td class="tg-0pky">Beacon Theatre, NY</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1YSEib-pH_Yu1yH-EUZQSr-fYSan6Xi3a?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/8/1993</td>
+    <td class="tg-0pky">WXPN, Philadelphia, PA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/12/1993</td>
+    <td class="tg-0pky">Constitution Hall, Wash DC</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1otqNaOXxiJoLamx_2kkCwuanzggyOJ0s?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">10/23/1993</td>
+    <td class="tg-0pky">Opening For Tears For Fears, Milwaukee</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1BwsKOY3zNz4GL1Tpa8iq8oZKT8NGpF_T?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/4/1993</td>
+    <td class="tg-0pky">Universal Amphitheater, L.A</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">EXCELLENT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/file/d/1nkc8ICk3oP6-qOik8aMq3pVl-hY4GRlj/view?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/9/1993</td>
+    <td class="tg-0pky">San Diego Civic Center.San Diego, CA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">11/15/1993</td>
+    <td class="tg-0pky">State Park Theatre, New Orleans, LA</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"><span style="font-weight:400;font-style:normal;color:#9A0000">MISSING</span></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">??/??/1993</td>
+    <td class="tg-0pky">88,5 Acoustic</td>
+    <td class="tg-0pky">Professional</td>
+    <td class="tg-0pky">GOOD/GREAT</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1mPbmTZPmZQQwcCH0rQKpAbQJA7zdw_Bu?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">??/??/1993</td>
+    <td class="tg-0pky">Tower Records, AUSTIN, TX</td>
+    <td class="tg-0pky">Audience</td>
+    <td class="tg-0pky">VERY BAD</td>
+    <td class="tg-0pky"><a href="https://drive.google.com/drive/folders/1yRsXPuNnwKqkwW2Gt37qdNhhLWnphNoV?usp=sharing" target="_blank" rel="noopener noreferrer">ONLINE</a></td>
+  </tr>
+</tbody>
+</table>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- 📜 Footer -->
+  <footer>
+    <a href="impressum.html" class="impressum-link">Impressum</a>
+  </footer>
+<!-- ABOUT PANEL -->
+<div class="about-panel">
+  <div class="about-trigger">ABOUT</div>
+  <div class="about-content">
+    <h3>WHO ARE WE?</h3>
+    <p>We’re simply a group of Jellyfish fans who decided to collect and preserve everything we could find — so that fans all around the world can continue to enjoy the magic of Jellyfish.</p>
+    <h3>TEAM</h3>
+    <p>Kai Danzberg<br>Johnnie J. Young</p>
+    <h3>SPECIAL THANKS TO</h3>
+    <p>Remco Terhoeven</p>
+    <h3>WEBSITE CREATOR</h3>
+    <p>Kai Danzberg</p>
+  </div>
+</div>
+
+<!-- HELP US PANEL -->
+<div class="help-panel">
+  <div class="help-trigger">HELP&nbsp;US!</div>
+  <div class="help-content">
+    <p>We’re always looking for missing or unreleased Jellyfish recordings. Maybe you have digital files or old analog tapes — 
+and you’re not sure how to transfer them. We can help!</p>
+    <p>If you think you have something interesting, please send us an</p>
+    <p class="email-line"><a href="mailto:kontakt@bungeroth.com">E-MAIL</a></p>
+    <p>Thank you for helping preserve the Jellyfish legacy!</p>
+  </div>
+</div>
+</body>
+</html>

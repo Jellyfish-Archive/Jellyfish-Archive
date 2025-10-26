@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jellyfish Archive – Home</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #fff;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    body {
+      width: 100%;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    video.bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1.2rem 2rem;
+      background: transparent;
+    }
+
+    .logo {
+      width: 150px;
+      margin-bottom: 0.6rem;
+      filter: drop-shadow(0 0 10px rgba(255, 210, 80, 0.7));
+      animation: goldGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes goldGlow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 220, 100, 0.5)); opacity: 0.9; }
+      50% { filter: drop-shadow(0 0 22px rgba(255, 240, 180, 1)); opacity: 1; }
+    }
+
+    nav {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 0.3rem;
+    }
+
+    nav a {
+      display: inline-block;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 220, 80, 0.4);
+      color: #000;
+      background: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-decoration: none;
+      text-transform: uppercase;
+      backdrop-filter: blur(3px);
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(255, 230, 100, 0.8);
+      box-shadow: 0 0 20px rgba(255, 230, 100, 0.8);
+      transform: translateY(-2px);
+    }
+
+    nav a.active {
+      background: rgba(255, 230, 100, 0.9);
+      color: #000;
+      box-shadow: 0 0 20px rgba(255, 230, 100, 0.9);
+    }
+
+    main {
+      margin-top: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      height: calc(100vh - 240px);
+      justify-content: center;
+    }
+
+    .content {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-container img {
+      width: 340px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(255, 230, 100, 0.3);
+      transition: transform 0.4s ease;
+    }
+
+    .image-container img:hover { transform: scale(1.05); }
+
+    .text-container {
+  max-width: 360px;                      /* schmaler */
+  background: rgba(255, 240, 180, 0.3);  /* etwas transparenter */
+  color: #000;
+  padding: 0.9rem 1.1rem;                /* weniger Innenabstand → kompakter */
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(255, 220, 120, 0.25);
+  backdrop-filter: blur(5px);
+  text-align: left;
+  font-size: 0.88rem;                    /* kleinere Schrift */
+  line-height: 1.45;                     /* weniger Zeilenhöhe */
+}
+
+.text-container h1 {
+  color: #b8860b;
+  margin-bottom: 0.6rem;                 /* weniger Abstand unten */
+  font-size: 1.4rem;                     /* Überschrift kleiner */
+  text-transform: uppercase;
+}
+
+    .text-container p { margin-bottom: 0.8rem; line-height: 1.6; }
+
+    .impressum-link {
+      position: fixed;
+      bottom: 40px;
+      left: 60px;
+      transform: rotate(-90deg);
+      transform-origin: left bottom;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffea80;
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+    }
+
+    .impressum-link:hover { color: #fff; text-decoration: none; }
+
+    /* === ABOUT PANEL === */
+    .about-panel {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+    }
+
+    .about-trigger {
+      background: rgba(200, 30, 30, 0.95);
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 2px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      padding: 1rem 0.5rem;
+      border-radius: 8px 0 0 8px;
+      box-shadow: 0 0 15px rgba(255, 60, 60, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .about-content {
+      position: absolute;
+      right: -320px;
+      width: 300px;
+      background: rgba(255, 240, 180, 0.9);
+      color: #000;
+      padding: 1.5rem;
+      border-radius: 12px 0 0 12px;
+      box-shadow: -5px 0 25px rgba(255, 100, 100, 0.4);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s ease;
+    }
+
+    .about-panel:hover .about-content {
+      right: 55px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* === HELP US PANEL === */
+    .help-panel {
+      position: fixed;
+      bottom: -1px;
+      left: 120px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .help-trigger {
+      background: rgba(255, 230, 100, 0.95);
+      color: #000;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 0 10px rgba(255, 230, 100, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .help-content {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 260px;
+      background: rgba(255, 240, 180, 0.96);
+      color: #000;
+      padding: 1rem 1.2rem;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 0 18px rgba(255, 220, 100, 0.3);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s ease;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      transform: translateY(10px);
+    }
+
+    .help-panel:hover .help-content {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+
+
+    html, body { overflow-y: visible !important; }
+    main, video.bg-video { overflow: visible !important; }
+    /* === UPDATES PANEL === */
+    .updates-panel {
+      position: fixed;
+      top: 100px;
+      right: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .updates-trigger {
+      background: rgba(255, 90, 170, 0.95);
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 2px;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      padding: 1rem 0.5rem;
+      border-radius: 8px 0 0 8px;
+      box-shadow: 0 0 15px rgba(255, 100, 180, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .updates-content {
+      position: absolute;
+      right: -320px;
+      width: 300px;
+      background: rgba(255, 220, 240, 0.96);
+      color: #000;
+      padding: 1.5rem;
+      border-radius: 12px 0 0 12px;
+      box-shadow: -5px 0 25px rgba(255, 100, 180, 0.4);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s ease;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .updates-panel:hover .updates-content {
+      right: 55px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .updates-content h3 {
+      margin-top: 0;
+      margin-bottom: 0.6rem;
+      color: #d6006e;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .updates-content hr {
+      border: none;
+      border-top: 1px solid rgba(255, 150, 210, 0.5);
+      margin: 0.6rem 0 0.8rem;
+    }
+
+    .updates-content p {
+      margin: 0.3rem 0;
+    }
+    /* === UPDATES BUTTON (oben rechts, größer & bündig) === */
+.updates-button {
+  position: fixed;
+  /* bündig am oberen/rechten Rand inkl. iOS safe-area */
+  top: calc(env(safe-area-inset-top, 0px) + -2px);
+  right: calc(env(safe-area-inset-right, 0px) + 170px);
+
+  background: linear-gradient(145deg, #ff4fae, #ff9bd8);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.06rem;             /* größer als die anderen */
+  letter-spacing: 1.2px;
+  padding: 0.85rem 1.8rem;         /* größer als die anderen */
+  border-radius: 14px;
+  border: 1px solid rgba(255, 120, 190, 0.35);
+  box-shadow: 0 10px 26px rgba(255, 120, 190, 0.35),
+              0 0 10px rgba(255, 140, 200, 0.45) inset;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .25s ease, box-shadow .3s ease, filter .3s ease;
+  z-index: 11000;                  /* klar über Header/Nav */
+}
+
+.updates-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(255, 120, 190, 0.45),
+              0 0 12px rgba(255, 160, 220, 0.55) inset;
+  filter: brightness(1.04);
+}
+
+/* === UPDATES POPUP (erscheint direkt unter dem Button) === */
+.updates-popup {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px + 56px);
+
+  /* 👉 Der Button sitzt rechts oben – Popup direkt darunter mittig ausgerichtet */
+  right: 40px;                 /* gleiche Position wie der Button */
+  transform: translateX(0);    /* zentriert darunter */
+
+  width: 360px;
+  background: rgba(255, 240, 250, 0.97);
+  color: #000;
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem 1.3rem;
+  box-shadow: 0 16px 36px rgba(255, 130, 210, 0.35);
+  border: 1px solid rgba(255, 150, 210, 0.35);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: top right; /* wichtig: Popup richtet sich am Button aus */
+  transition: opacity .28s ease, transform .28s ease;
+  z-index: 11000;
+}
+
+.updates-popup.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.updates-popup h3 {
+  margin: 0 0 .55rem 0;
+  color: #d6006e;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.updates-popup hr {
+  border: none;
+  border-top: 1px solid rgba(255, 150, 210, 0.5);
+  margin: .5rem 0 .8rem;
+}
+
+.updates-popup p {
+  margin: 0.28rem 0;
+  font-size: .95rem;
+  line-height: 1.45;
+}
+
+.updates-popup em {
+  display: block;
+  margin-top: .75rem;
+  font-size: .92rem;
+  color: #a00070;
+}
+
+/* Mobile: etwas kleiner, näher an die Ecken */
+@media (max-width: 640px) {
+  .updates-button {
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    right: calc(env(safe-area-inset-right, 0px) + 14px);
+    font-size: .98rem;
+    padding: .7rem 1.2rem;
+    border-radius: 12px;
+  }
+  .updates-popup {
+    top: calc(env(safe-area-inset-top, 0px) + 8px + 52px);
+    right: calc(env(safe-area-inset-right, 0px) + 14px);
+    width: min(86vw, 330px);
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<!-- 📱 Zuverlässige mobile Weiterleitung -->
+<script>
+  (function() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua.toLowerCase());
+
+    // Wenn mobil und nicht schon auf der mobilen Seite → weiterleiten
+    if (isMobile && !window.location.href.includes("mobile.html")) {
+      window.location.replace("mobile.html");
+    }
+  })();
+</script>
+
+<video class="bg-video" autoplay muted loop playsinline>
+    <source src="media/bgvid.mp4" type="video/mp4">
+  </video>
+
+  <header>
+    <img src="media/logo.png" alt="Jellyfish Archive Logo" class="logo">
+    <nav>
+      <a href="home.html" class="active">HOME</a>
+      <a href="audio.html">AUDIO-ARCHIVE</a>
+      <a href="video.html">VIDEO-ARCHIVE</a>
+      <a href="jellytube.html">JELLYTUBE</a>
+    </nav>
+  <div class="updates-button" id="updatesBtn">UPDATES</div>
+  </header>
+
+  <main>
+  <div class="content">
+    <div class="image-container">
+      <img src="media/pichome.jpg" alt="Jellyfish Home Image">
+    </div>
+    <div class="text-container">
+      <h1>Welcome to the Jellyfish-Archive!</h1>
+      <p>
+        The Jellyfish Archive has been around since 2015 — built to preserve the best possible quality of every known video, performance, and recording for all fans to enjoy, forever.
+      </p>
+      <p>
+        We all miss Jellyfish, so the best thing we can do is relive the magic — by watching and listening to those legendary concerts, music videos, and interviews that made them so special.
+      </p>
+      <p>
+        Feel free to dive in and explore — you might discover something new or long forgotten.  
+        And if you’ve never heard of Jellyfish before... do yourself a favor and watch a few of their shows.
+      </p>
+      <p>
+        If you enjoy what you find here, consider supporting the project by buying me a coffee —  
+        just click the little coffee cup button at the bottom right of this page ☕.
+      </p>
+      <p><strong>LET’S GO JELLYFISHIN’!</strong></p>
+    </div>
+  </div>
+</main>
+
+  <a href="impressum.html" class="impressum-link">Impressum</a>
+
+  <!-- ABOUT PANEL -->
+  <div class="about-panel">
+    <div class="about-trigger">ABOUT</div>
+    <div class="about-content">
+      <h3>WHO ARE WE?</h3>
+      <p>We’re simply a group of Jellyfish fans who decided to collect and preserve everything we could find — so that fans all around the world can continue to enjoy the magic of Jellyfish.</p>
+      <h3>TEAM</h3>
+      <p>Kai Danzberg<br>Johnnie J. Young</p>
+      <h3>SPECIAL THANKS TO</h3>
+      <p>Remco Terhoeven</p>
+      <h3>WEBSITE CREATOR</h3>
+      <p>Kai Danzberg</p>
+    </div>
+  </div>
+
+  <!-- HELP US PANEL -->
+  <div class="help-panel">
+    <div class="help-trigger">HELP&nbsp;US!</div>
+    <div class="help-content">
+      <p>We’re always looking for missing or unreleased Jellyfish recordings. Maybe you have digital files or old analog tapes — 
+and you’re not sure how to transfer them. We can help!</p>
+      <p>If you think you have something interesting, please send us an</p>
+<p class="email-line"><a href="mailto:kontakt@bungeroth.com">E-MAIL</a></p>
+<p>Thank you for helping preserve the Jellyfish legacy!</p>
+    </div>
+  </div>
+  <!-- UPDATES POPUP -->
+  <div class="updates-popup" id="updatesPopup">
+    <h3>Latest Update:</h3>
+    <p><strong>Audio-Archive Updated:</strong> 01/01/2025</p>
+    <hr>
+    <p>1991-04-13 The Catalyst (Santa Cruz, California)</p>
+    <p>1991-04-29 Melkweg (Amsterdam, Netherlands)</p>
+    <p>1991-06-08 Promo Radio Show (Santa Barbara, California)</p>
+    <p>1991-06-14 KROQ Loveline Appearance</p>
+    <p>1993-06-05 Trocadero (Philadelphia, Pennsylvania)</p>
+    <em>Thanks to Hailey Carol</em>
+  </div>
+
+  <script>
+    const updatesBtn = document.getElementById('updatesBtn');
+    const updatesPopup = document.getElementById('updatesPopup');
+
+    // Zeige Popup beim Hover
+    updatesBtn.addEventListener('mouseenter', () => {
+      updatesPopup.classList.add('active');
+    });
+
+    // Verstecke Popup, wenn Maus weggeht
+    updatesBtn.addEventListener('mouseleave', () => {
+      // kurze Verzögerung, damit man ins Popup gehen kann
+      setTimeout(() => {
+        if (!updatesPopup.matches(':hover')) {
+          updatesPopup.classList.remove('active');
+        }
+      }, 150);
+    });
+
+    // Bleibt offen, wenn Maus über Popup ist
+    updatesPopup.addEventListener('mouseenter', () => {
+      updatesPopup.classList.add('active');
+    });
+
+    // Schließt sich, wenn Maus auch vom Popup weggeht
+    updatesPopup.addEventListener('mouseleave', () => {
+      updatesPopup.classList.remove('active');
+    });
+  </script>
+
+  <!-- ☕ OFFIZIELLES BUY ME A COFFEE WIDGET -->
+  <script data-name="BMC-Widget" data-cfasync="false"
+    src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+    data-id="kaib4"
+    data-description="Support the Jellyfish Archive on Buy Me a Coffee!"
+    data-message=""
+    data-color="#ffd200"
+    data-position="Right"
+    data-x_margin="18"
+    data-y_margin="18">
+  </script>
+
+</body>
+</html>
