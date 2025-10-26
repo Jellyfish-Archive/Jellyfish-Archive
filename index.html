@@ -46,6 +46,11 @@
     animation: glowPulse 3.5s ease-in-out infinite;
     filter: drop-shadow(0 0 20px rgba(255, 120, 220, 0.9)) brightness(1.1);
     mix-blend-mode: screen;
+
+    /* 🧩 Safari / iOS Fix */
+    will-change: transform, filter;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   .jelly-logo:hover {
