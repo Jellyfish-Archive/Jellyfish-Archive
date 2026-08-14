@@ -158,6 +158,157 @@ nav a.active {
 
     .text-container p { margin-bottom: 0.8rem; line-height: 1.6; }
 
+    /* === FLOATING JELLYFISH HD PROJECT LOGO === */
+    .hd-project-launcher {
+      width: 285px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      filter: drop-shadow(0 0 10px rgba(255, 225, 70, 0.55));
+      animation: hdLogoFloat 4s ease-in-out infinite;
+      transition: filter 0.3s ease;
+    }
+
+    .hd-project-launcher img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transform: translateZ(0) scale(1);
+      backface-visibility: hidden;
+      will-change: transform, filter;
+      transition: transform 0.4s ease, filter 0.4s ease;
+    }
+
+    .hd-project-launcher:hover,
+    .hd-project-launcher:focus-visible {
+      filter: drop-shadow(0 0 34px rgba(255, 150, 240, 0.95))
+              drop-shadow(0 0 60px rgba(255, 225, 120, 0.65));
+      outline: none;
+    }
+
+    .hd-project-launcher:hover img,
+    .hd-project-launcher:focus-visible img {
+      transform: translateZ(0) scale(1.2);
+      filter: brightness(1.35);
+    }
+
+    @keyframes hdLogoFloat {
+      0%, 100% { transform: translateY(0) rotate(-1deg); }
+      50% { transform: translateY(-14px) rotate(1deg); }
+    }
+
+    /* === HD PROJECT OVERLAY === */
+    .hd-project-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 12000;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background: rgba(10, 3, 14, 0.82);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .hd-project-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .hd-project-modal {
+      position: relative;
+      width: min(92vw, 620px);
+      padding: 1.5rem 2rem 2rem;
+      border: 1px solid rgba(255, 225, 100, 0.65);
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(55, 18, 50, 0.97), rgba(20, 8, 28, 0.98));
+      box-shadow: 0 0 42px rgba(255, 80, 175, 0.34), inset 0 0 25px rgba(255, 225, 90, 0.06);
+      text-align: center;
+      transform: translateY(18px) scale(0.96);
+      transition: transform 0.3s ease;
+    }
+
+    .hd-project-overlay.active .hd-project-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .hd-project-modal-logo {
+      width: min(72vw, 330px);
+      margin: -0.4rem auto 0.25rem;
+      filter: drop-shadow(0 0 12px rgba(255, 225, 70, 0.45));
+    }
+
+    .hd-project-modal p {
+      max-width: 480px;
+      margin: 0 auto 1.25rem;
+      color: #fff;
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .hd-project-modal .jellytube-project-link {
+      color: #ffea80;
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-shadow: 0 0 10px rgba(255, 225, 90, 0.45);
+    }
+
+    .hd-project-modal .jellytube-project-link:hover {
+      color: #fff;
+      text-shadow: 0 0 16px rgba(255, 150, 235, 0.95);
+    }
+
+    .hd-project-close {
+      position: absolute;
+      top: 0.7rem;
+      right: 0.85rem;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 235, 150, 0.45);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffea80;
+      font-size: 1.65rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .hd-project-button {
+      display: inline-block;
+      padding: 0.65rem 1rem;
+      border: 1px solid rgba(255, 235, 150, 0.75);
+      border-radius: 8px;
+      background: linear-gradient(145deg, #ff4fae, #ff9bd8);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      text-decoration: none;
+      text-transform: uppercase;
+      box-shadow: 0 0 14px rgba(255, 90, 170, 0.45);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    }
+
+    .hd-project-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 22px rgba(255, 120, 190, 0.75);
+      filter: brightness(1.08);
+    }
+
+    @media (max-width: 1120px) {
+      .content { gap: 1.4rem; }
+      .image-container img { width: 300px; }
+      .hd-project-launcher { width: 245px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hd-project-launcher { animation: none; }
+    }
+
     .impressum-link {
       position: fixed;
       bottom: 40px;
@@ -484,8 +635,31 @@ nav a.active {
       </p>
       <p><strong>LET’S GO JELLYFISHIN’!</strong></p>
     </div>
+    <button class="hd-project-launcher" id="hdProjectOpen" type="button"
+      aria-label="Open The Jellyfish HD Project" aria-haspopup="dialog">
+      <img src="media/jellyfish-hd-project-logo.png" alt="The Jellyfish HD Project">
+    </button>
   </div>
 </main>
+
+  <!-- JELLYFISH HD PROJECT OVERLAY -->
+  <div class="hd-project-overlay" id="hdProjectOverlay" aria-hidden="true">
+    <section class="hd-project-modal" role="dialog" aria-modal="true" aria-labelledby="hdProjectTitle">
+      <button class="hd-project-close" id="hdProjectClose" type="button" aria-label="Close overlay">&times;</button>
+      <img class="hd-project-modal-logo" src="media/jellyfish-hd-project-logo.png"
+        alt="" aria-hidden="true">
+      <h2 id="hdProjectTitle" style="position:absolute;left:-10000px;">The Jellyfish HD Project</h2>
+      <p>
+        We are bringing classic Jellyfish videos into HD and 4K using the latest
+        Starlight AI models. This high-quality processing is costly, so every
+        contribution helps us restore and preserve more rare footage. Already
+        restored videos are available in
+        <a class="jellytube-project-link" href="jellytube.html#hd-restored">JellyTube</a>.
+      </p>
+      <a class="hd-project-button" href="https://fundrazr.com/jellyfishhd"
+        target="_blank" rel="noopener noreferrer">Support the HD Project</a>
+    </section>
+  </div>
 
   <a href="impressum.html" class="impressum-link">Impressum</a>
 
@@ -531,6 +705,34 @@ and you’re not sure how to transfer them. We can help!</p>
   <script>
     const updatesBtn = document.getElementById('updatesBtn');
     const updatesPopup = document.getElementById('updatesPopup');
+    const hdProjectOpen = document.getElementById('hdProjectOpen');
+    const hdProjectOverlay = document.getElementById('hdProjectOverlay');
+    const hdProjectClose = document.getElementById('hdProjectClose');
+
+    function openHdProject() {
+      hdProjectOverlay.classList.add('active');
+      hdProjectOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      hdProjectClose.focus();
+    }
+
+    function closeHdProject() {
+      hdProjectOverlay.classList.remove('active');
+      hdProjectOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      hdProjectOpen.focus();
+    }
+
+    hdProjectOpen.addEventListener('click', openHdProject);
+    hdProjectClose.addEventListener('click', closeHdProject);
+    hdProjectOverlay.addEventListener('click', (event) => {
+      if (event.target === hdProjectOverlay) closeHdProject();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && hdProjectOverlay.classList.contains('active')) {
+        closeHdProject();
+      }
+    });
 
     // Zeige Popup beim Hover
     updatesBtn.addEventListener('mouseenter', () => {
