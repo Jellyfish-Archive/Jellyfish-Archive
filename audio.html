@@ -66,7 +66,12 @@
       margin-bottom: 0.6rem;
       filter: drop-shadow(0 0 10px rgba(255, 210, 80, 0.7));
       animation: goldGlow 6s ease-in-out infinite;
+      cursor: pointer;
+      transition: transform 0.28s ease;
     }
+
+    .logo:hover { transform: scale(1.08); }
+    .logo-home-link { display: block; line-height: 0; }
 
     @keyframes goldGlow {
       0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 220, 100, 0.5)); opacity: 0.9; }
@@ -366,7 +371,7 @@
 
   <!-- 🧭 Header -->
   <header>
-    <img src="media/logo.png" alt="Jellyfish Archive Logo" class="logo">
+    <a class="logo-home-link" href="home.html" aria-label="Go to home"><img src="media/logo.png" alt="Jellyfish Archive Logo" class="logo desktop-sound-logo"></a>
     <nav>
       <a href="home.html">HOME</a>
       <a href="audio.html" class="active">AUDIO-ARCHIVE</a>
@@ -998,6 +1003,32 @@ and you’re not sure how to transfer them. We can help!</p>
     input.addEventListener('input', filterArchive);
     input.addEventListener('search', filterArchive);
     filterArchive();
+  })();
+</script>
+<audio class="logo-hover-sound" preload="auto"></audio>
+<script>
+  (function () {
+    const logo = document.querySelector('.desktop-sound-logo');
+    const sound = document.querySelector('.logo-hover-sound');
+    let inside = false;
+    function playLogoSound() {
+      if (inside) return;
+      inside = true;
+      const sources = ['media/logosound.mp3', 'logosound.mp3'];
+      let current = 0;
+      const attempt = i => {
+        if (i >= sources.length) return;
+        current = i;
+        sound.src = sources[i];
+        sound.load();
+        const playing = sound.play();
+        if (playing) playing.catch(() => { if (current === i) attempt(i + 1); });
+      };
+      sound.onerror = () => attempt(current + 1);
+      attempt(0);
+    }
+    logo.addEventListener('mouseenter', playLogoSound);
+    logo.addEventListener('mouseleave', () => { inside = false; sound.pause(); sound.currentTime = 0; });
   })();
 </script>
 </body>
