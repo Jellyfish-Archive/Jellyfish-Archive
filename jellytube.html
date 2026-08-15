@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>JellyTube</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preload" as="image" href="media/jellytubelogo.png">
+  <link rel="preload" as="image" href="media/jellytubelogo_white.png">
   <style>
     html, body {
       margin: 0;
@@ -108,6 +110,9 @@
 
 .jelly-logo {
   width: 280px;
+  height: auto;
+  aspect-ratio: 917 / 543;
+  object-fit: contain;
   position: relative;
   display: block;
   animation: glowPulse 6s ease-in-out infinite;
@@ -384,19 +389,14 @@ body {
     <p class="category-intro">Classic Jellyfish footage restored and upscaled with modern A.I. technology.</p>
     <div class="jellytube-grid">
 
-      <div class="jellytube-item" data-type="youtube" data-video="IQmVrK1DaMc">
-        <img src="https://img.youtube.com/vi/IQmVrK1DaMc/hqdefault.jpg" alt="Jellyfish HD/4K A.I. Restored Video 1">
-        <div class="title">Baby's Coming Back (HD Restored AI)</div>
-      </div>
-      
       <div class="jellytube-item" data-type="youtube" data-video="FJnuy60AiX8">
         <img src="https://img.youtube.com/vi/FJnuy60AiX8/hqdefault.jpg" alt="Jellyfish HD/4K A.I. Restored Video 1">
-        <div class="title">91-93 UPSCALING EXAMPLES</div>
+        <div class="title">Jellyfish HD/4K A.I. Restored – Video 1</div>
       </div>
 
       <div class="jellytube-item" data-type="youtube" data-video="naGg6LtwP6U">
         <img src="https://img.youtube.com/vi/naGg6LtwP6U/hqdefault.jpg" alt="Jellyfish HD/4K A.I. Restored Video 2">
-        <div class="title">The King Is Half-Undressed (HD Restored AI)</div>
+        <div class="title">Jellyfish HD/4K A.I. Restored – Video 2</div>
       </div>
 
     </div>
@@ -701,7 +701,8 @@ const switchBtn = document.getElementById('lightSwitch');
 let clickSound;
 try { clickSound = new Audio('media/switch_click.mp3'); } catch(e){ /* ignore */ }
 switchBtn.addEventListener('click', () => {
-  if (clickSound) { clickSound.currentTime = 0; clickSound.play(); }
+  const savedScrollY = window.scrollY;
+  if (clickSound) { clickSound.currentTime = 0; clickSound.play().catch(() => {}); }
 
   const isDark = document.body.classList.toggle('dark-mode');
 
@@ -726,6 +727,7 @@ switchBtn.addEventListener('click', () => {
       b.a = 0.08 + Math.random()*0.12;
     }
   }
+  requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, left: 0, behavior: 'instant' }));
 });
 </script>
 <!-- 🪩 Intro Overlay -->
