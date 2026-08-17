@@ -598,7 +598,28 @@ nav a.active {
   }
 }
 
+  .jellytunes-fab{position:fixed;right:24px;bottom:108px;z-index:48;display:grid;place-items:center;width:176px;min-height:76px;padding:8px 13px;border:1px solid rgba(255,255,255,.45);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.3),rgba(255,255,255,.12));box-shadow:0 15px 38px rgba(46,10,37,.3),inset 0 1px 0 rgba(255,255,255,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:transform .25s ease,background .25s ease;animation:jellyTunesFabFloat 4s ease-in-out infinite}.jellytunes-fab img{display:block;width:100%;height:58px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,221,247,.65))}.jellytunes-fab:hover,.jellytunes-fab:focus-visible{transform:translateY(-4px) scale(1.06);background:linear-gradient(145deg,rgba(255,255,255,.42),rgba(255,255,255,.18));outline:2px solid rgba(255,255,255,.8);outline-offset:3px}@keyframes jellyTunesFabFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}@media(max-width:1050px){.jellytunes-fab{right:14px;bottom:100px;width:145px;min-height:66px}.jellytunes-fab img{height:48px}}
   </style>
+<style>
+  html{scrollbar-gutter:stable}
+  header{height:218px;justify-content:flex-start!important;padding:19px 32px!important}
+  header .logo-home-link{height:156px;display:flex;align-items:flex-start;justify-content:center}
+  header .logo{width:150px;height:auto;margin:0!important}
+  header nav{height:45px;margin:0!important;gap:16px!important;flex-wrap:nowrap!important;align-items:center}
+  header nav>a,nav .jellyverse-menu summary{min-height:39px;padding:8px 19px!important;border:1px solid rgba(255,220,80,.4);border-radius:8px;background:rgba(255,255,255,.6);color:#000;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:600;line-height:21px;letter-spacing:1px;text-transform:uppercase;backdrop-filter:blur(3px);box-sizing:border-box}
+  nav .jellyverse-menu{position:relative;display:flex;align-items:center;height:39px;color:#000}
+  nav .jellyverse-menu summary{display:flex;align-items:center;gap:7px;cursor:pointer;list-style:none;user-select:none;transition:all .3s ease}
+  nav .jellyverse-menu summary::-webkit-details-marker{display:none}
+  nav .jellyverse-menu summary:after{content:"▾";font-size:.72em;transition:transform .2s ease}
+  nav .jellyverse-menu[open] summary:after{transform:rotate(180deg)}
+  nav .jellyverse-menu summary:hover,nav .jellyverse-menu[open] summary{background:rgba(255,230,100,.8);color:#000;box-shadow:0 0 20px rgba(255,230,100,.8);transform:translateY(-2px)}
+  nav .jellyverse-submenu{position:absolute;left:50%;top:calc(100% + 8px);z-index:90;display:grid;min-width:170px;padding:6px;transform:translateX(-50%);border:1px solid rgba(255,220,80,.55);border-radius:13px;background:rgba(255,250,220,.88);box-shadow:0 15px 35px rgba(91,57,0,.2),inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(14px)}
+  nav .jellyverse-submenu a{display:block;height:auto!important;min-height:0!important;margin:0!important;padding:10px 13px!important;border:0!important;border-radius:9px;white-space:nowrap;text-align:left;background:transparent;color:#321f00;font-size:13px}
+  nav .jellyverse-submenu a:hover{background:rgba(255,218,72,.48);color:#321f00;box-shadow:0 0 12px rgba(255,210,60,.3);transform:none}
+</style>
+<style>
+.jellytunes-fab{display:flex;grid-template:none;flex-direction:column;gap:3px;width:132px;min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;text-decoration:none;overflow:visible}.jellytunes-fab:before{content:none}.jellytunes-fab img{width:112px;height:92px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(255,244,185,.7)) drop-shadow(0 0 18px rgba(255,141,213,.42));transition:transform .3s ease,filter .3s ease}.jellytunes-fab span{position:static;display:block;padding:5px 9px;border:1px solid rgba(255,232,145,.65);border-radius:999px;background:rgba(53,10,42,.84);color:#fff7c7;font-size:10.5px;font-weight:900;letter-spacing:.055em;line-height:1.1;text-align:center;white-space:nowrap;box-shadow:0 4px 12px rgba(35,4,27,.42),0 0 10px rgba(255,211,104,.3);text-shadow:0 1px 3px rgba(20,0,15,.95)}.jellytunes-fab:hover,.jellytunes-fab:focus-visible{background:transparent;box-shadow:none;outline:0}.jellytunes-fab:hover img,.jellytunes-fab:focus-visible img{transform:scale(1.09);filter:drop-shadow(0 0 11px rgba(255,250,195,.9)) drop-shadow(0 0 25px rgba(255,132,211,.65))}.jellytunes-fab:hover span,.jellytunes-fab:focus-visible span{background:rgba(85,15,65,.94);box-shadow:0 5px 15px rgba(35,4,27,.48),0 0 15px rgba(255,211,104,.48)}
+</style>
 </head>
 <body>
 
@@ -612,7 +633,7 @@ nav a.active {
       <a href="home.html" class="active">HOME</a>
       <a href="audio.html">AUDIO-ARCHIVE</a>
       <a href="video.html">VIDEO-ARCHIVE</a>
-      <a href="jellytube.html">JELLYTUBE</a>
+      <details class="jellyverse-menu"><summary>JELLYVERSE</summary><div class="jellyverse-submenu"><a href="jellytube.html">JELLYTUBE</a><a href="jellytunes.html">JELLYTUNES</a></div></details>
     </nav>
   <div class="updates-button" id="updatesBtn">UPDATES</div>
   </header>
@@ -646,6 +667,8 @@ nav a.active {
     </button>
   </div>
 </main>
+
+  <a class="jellytunes-fab" href="jellytunes.html" aria-label="Listen now on JellyTunes"><img src="media/jellyradio-icon.png" alt="JellyTunes Radio"><span>JellyTunes! Listen now!</span></a>
 
   <!-- JELLYFISH HD PROJECT OVERLAY -->
   <div class="hd-project-overlay" id="hdProjectOverlay" aria-hidden="true">

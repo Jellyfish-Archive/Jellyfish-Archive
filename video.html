@@ -263,6 +263,23 @@
     .help-content { position: absolute; bottom: calc(100% + 8px); left: 0; width: 260px; background: rgba(255, 240, 180, 0.96); color: #000; padding: 1rem 1.2rem; border-radius: 12px 12px 0 0; box-shadow: 0 0 18px rgba(255, 220, 100, 0.3); backdrop-filter: blur(6px); opacity: 0; pointer-events: none; transition: all 0.35s ease; font-size: 0.9rem; line-height: 1.5; transform: translateY(10px); }
     .help-panel:hover .help-content { opacity: 1; pointer-events: auto; transform: translateY(0); }
   </style>
+<style>
+  html{scrollbar-gutter:stable}
+  header{height:218px;justify-content:flex-start!important;padding:19px 32px!important}
+  header .logo-home-link{height:156px;display:flex;align-items:flex-start;justify-content:center}
+  header .logo{width:150px;height:auto;margin:0!important}
+  header nav{height:45px;margin:0!important;gap:16px!important;flex-wrap:nowrap!important;align-items:center}
+  header nav>a,nav .jellyverse-menu summary{min-height:39px;padding:8px 19px!important;border:1px solid rgba(255,220,80,.4);border-radius:8px;background:rgba(255,255,255,.6);color:#000;font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:600;line-height:21px;letter-spacing:1px;text-transform:uppercase;backdrop-filter:blur(3px);box-sizing:border-box}
+  nav .jellyverse-menu{position:relative;display:flex;align-items:center;height:39px;color:#000}
+  nav .jellyverse-menu summary{display:flex;align-items:center;gap:7px;cursor:pointer;list-style:none;user-select:none;transition:all .3s ease}
+  nav .jellyverse-menu summary::-webkit-details-marker{display:none}
+  nav .jellyverse-menu summary:after{content:"▾";font-size:.72em;transition:transform .2s ease}
+  nav .jellyverse-menu[open] summary:after{transform:rotate(180deg)}
+  nav .jellyverse-menu summary:hover,nav .jellyverse-menu[open] summary{background:rgba(255,230,100,.8);color:#000;box-shadow:0 0 20px rgba(255,230,100,.8);transform:translateY(-2px)}
+  nav .jellyverse-submenu{position:absolute;left:50%;top:calc(100% + 8px);z-index:90;display:grid;min-width:170px;padding:6px;transform:translateX(-50%);border:1px solid rgba(255,220,80,.55);border-radius:13px;background:rgba(255,250,220,.88);box-shadow:0 15px 35px rgba(91,57,0,.2),inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(14px)}
+  nav .jellyverse-submenu a{display:block;height:auto!important;min-height:0!important;margin:0!important;padding:10px 13px!important;border:0!important;border-radius:9px;white-space:nowrap;text-align:left;background:transparent;color:#321f00;font-size:13px}
+  nav .jellyverse-submenu a:hover{background:rgba(255,218,72,.48);color:#321f00;box-shadow:0 0 12px rgba(255,210,60,.3);transform:none}
+</style>
 </head>
 <body>
 
@@ -276,7 +293,7 @@
       <a href="home.html">HOME</a>
       <a href="audio.html">AUDIO-ARCHIVE</a>
       <a href="video.html" class="active">VIDEO-ARCHIVE</a>
-      <a href="jellytube.html">JELLYTUBE</a>
+      <details class="jellyverse-menu"><summary>JELLYVERSE</summary><div class="jellyverse-submenu"><a href="jellytube.html">JELLYTUBE</a><a href="jellytunes.html">JELLYTUNES</a></div></details>
     </nav>
   </header>
 

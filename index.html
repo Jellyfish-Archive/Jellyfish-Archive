@@ -15,6 +15,7 @@
     .jelly-logo:hover,.jelly-logo:focus{transform:scale(1.2);filter:drop-shadow(0 0 60px rgba(255,160,255,1)) brightness(1.4);outline:0}
     .jelly-logo.entering{animation:clickLogo 3s cubic-bezier(.2,.85,.25,1) forwards!important}
     .sparkle-layer{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}.sparkle-dot{position:absolute;width:4px;height:4px;border-radius:50%;opacity:0;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.3) 60%,transparent 100%);filter:blur(1px);animation:sparkle 3.5s ease-in-out infinite;mix-blend-mode:screen}
+    .skip-intro{position:fixed;right:clamp(16px,3vw,38px);top:clamp(16px,3vw,32px);z-index:10;min-height:42px;padding:9px 17px;border:1px solid rgba(100,61,0,.24);border-radius:999px;background:rgba(255,255,255,.27);color:#633d00;font:800 11px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:.1em;cursor:pointer;box-shadow:0 7px 20px rgba(92,57,0,.1),inset 0 1px 0 rgba(255,255,255,.62);backdrop-filter:blur(9px);transition:background .2s ease,transform .2s ease}.skip-intro:hover,.skip-intro:focus-visible{background:rgba(255,255,255,.48);transform:scale(1.04);outline:2px solid rgba(99,61,0,.45);outline-offset:2px}
     @keyframes fade{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
     @keyframes glow{0%,100%{filter:drop-shadow(0 0 18px rgba(255,100,200,.9)) drop-shadow(0 0 50px rgba(255,220,160,.5)) brightness(1.1)}50%{filter:drop-shadow(0 0 60px rgba(255,160,250,1)) drop-shadow(0 0 140px rgba(255,220,160,.8)) brightness(1.4)}}
     @keyframes clickLogo{0%{transform:scale(1.2)}12%{transform:scale(1.52)}30%,100%{transform:scale(1.36);filter:drop-shadow(0 0 100px rgba(255,255,255,1)) brightness(1.6)}}
@@ -23,6 +24,7 @@
 </head>
 <body>
   <canvas id="bokehCanvas"></canvas>
+  <button class="skip-intro" id="skipIntro" type="button">SKIP INTRO</button>
   <div class="logo-wrap" id="logoWrap"><img src="media/image.png" alt="Enter Jellyfish Archive" class="jelly-logo" id="jellyLogo" role="button" tabindex="0"></div>
   <audio id="introSound" preload="auto"></audio>
   <script>
@@ -32,10 +34,11 @@
     for(let i=0;i<35;i++)bokehs.push(make());
     function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.globalCompositeOperation='lighter';for(const b of bokehs){const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);g.addColorStop(0,b.color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.globalAlpha=b.a;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();b.x+=b.dx;b.y+=b.dy;if(b.x< -b.r)b.x=canvas.width+b.r;if(b.x>canvas.width+b.r)b.x=-b.r;if(b.y< -b.r)b.y=canvas.height+b.r;if(b.y>canvas.height+b.r)b.y=-b.r}requestAnimationFrame(animate)}animate();
     const wrap=document.getElementById('logoWrap'),layer=document.createElement('div');layer.className='sparkle-layer';wrap.append(layer);for(let i=0;i<50;i++){const dot=document.createElement('i');dot.className='sparkle-dot';dot.style.left=Math.random()*100+'%';dot.style.top=Math.random()*100+'%';dot.style.animationDelay=Math.random()*4+'s';dot.style.animationDuration=2.5+Math.random()*4+'s';layer.append(dot)}
-    const logo=document.getElementById('jellyLogo'),sound=document.getElementById('introSound');let entering=false;
+    const logo=document.getElementById('jellyLogo'),sound=document.getElementById('introSound');let entering=false,enterTimer=0;
     function playIntroSound(){const sources=['media/intro.mp3','intro.mp3'];let current=0;const attempt=i=>{if(i>=sources.length)return;current=i;sound.src=sources[i];sound.load();const playing=sound.play();if(playing)playing.catch(()=>{if(current===i)attempt(i+1)})};sound.onerror=()=>attempt(current+1);attempt(0)}
-    function enter(){if(entering)return;entering=true;logo.classList.add('entering');logo.removeAttribute('tabindex');playIntroSound();setTimeout(()=>{location.href='home.html'},3000)}
+    function finishIntro(){clearTimeout(enterTimer);sound.pause();sound.currentTime=0;location.href='home.html'}function enter(){if(entering)return;entering=true;logo.classList.add('entering');logo.removeAttribute('tabindex');playIntroSound();enterTimer=setTimeout(finishIntro,3000)}
     logo.addEventListener('click',enter);logo.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enter()}});
+    document.getElementById('skipIntro').addEventListener('click',finishIntro);
   </script>
 </body>
 </html>
