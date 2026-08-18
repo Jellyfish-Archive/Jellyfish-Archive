@@ -668,7 +668,7 @@ nav a.active {
   </div>
 </main>
 
-  <a class="jellytunes-fab" href="jellytunes.html" aria-label="Listen now on JellyTunes"><img src="media/jellyradio-icon.png" alt="JellyTunes Radio"><span>JellyTunes! Listen now!</span></a>
+  <a class="jellytunes-fab" href="jellytunes.html?radio=1" data-site-radio aria-label="Open Jelly-Radio"><img src="media/jellyradio-icon.png" alt="Jelly-Radio"><span>Jelly-Radio! Listen now!</span></a>
 
   <!-- JELLYFISH HD PROJECT OVERLAY -->
   <div class="hd-project-overlay" id="hdProjectOverlay" aria-hidden="true">
@@ -826,5 +826,6 @@ and you’re not sure how to transfer them. We can help!</p>
     logo.addEventListener('mouseleave', () => { inside = false; sound.pause(); sound.currentTime = 0; });
   })();
 </script>
+<script src="site-radio.js"></script>
 </body>
 </html>
